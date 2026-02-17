@@ -1,0 +1,12 @@
+{
+  "name": "Rahul Kumar",
+  "age": 20,
+  "gender": "Male",
+  "category": "OBC",
+  "annual_income": 250000,
+  "education_level": "Undergraduate",
+  "state": "Maharashtra",
+  "district": "Mumbai",
+  "is_disabled": false,
+  "is_minority": false
+}
