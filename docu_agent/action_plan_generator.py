@@ -5,11 +5,14 @@ Action Plan Generator module for creating step-by-step application guides.
 import os
 from typing import List
 from openai import OpenAI
-from .models import SchemeDocument, UserProfile, EligibilityResult
+from .models import SchemeDocument, UserProfile, EligibilityResult, EligibilityStatus
 
 
 class ActionPlanGenerator:
     """Generates detailed action plans for applying to schemes"""
+    
+    # Maximum content length for AI prompts to avoid token limits
+    MAX_CONTENT_LENGTH = 4000
     
     def __init__(self, api_key: str = None, model: str = "gpt-4-turbo-preview"):
         """
@@ -43,7 +46,7 @@ class ActionPlanGenerator:
         Returns:
             List of actionable steps
         """
-        if eligibility_result.status == "Not Eligible":
+        if eligibility_result.status == EligibilityStatus.NOT_ELIGIBLE:
             return [
                 "Unfortunately, you are not eligible for this scheme based on current criteria.",
                 "Review the unmatched criteria to understand why.",
@@ -58,7 +61,7 @@ SCHEME: {scheme_doc.title}
 ELIGIBILITY: {eligibility_result.status}
 
 Scheme Details:
-{scheme_doc.content[:3000]}
+{scheme_doc.content[:self.MAX_CONTENT_LENGTH]}
 
 Create a detailed, actionable, step-by-step plan for this user to successfully apply for the scheme.
 Include:

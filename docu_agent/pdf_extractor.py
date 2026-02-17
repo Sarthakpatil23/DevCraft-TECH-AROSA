@@ -11,10 +11,6 @@ from .models import SchemeDocument
 class PDFExtractor:
     """Extracts text content from PDF documents"""
     
-    def __init__(self):
-        """Initialize PDF extractor"""
-        pass
-    
     def extract_text_from_pdf(self, pdf_path: str) -> str:
         """
         Extract text content from a PDF file.

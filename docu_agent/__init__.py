@@ -6,7 +6,7 @@ and determining eligibility for users.
 from .pdf_extractor import PDFExtractor
 from .eligibility_checker import EligibilityChecker
 from .action_plan_generator import ActionPlanGenerator
-from .models import UserProfile, SchemeDocument, EligibilityResult
+from .models import UserProfile, SchemeDocument, EligibilityResult, EligibilityStatus
 
 __version__ = "1.0.0"
 __all__ = [
@@ -15,5 +15,6 @@ __all__ = [
     "ActionPlanGenerator",
     "UserProfile",
     "SchemeDocument",
-    "EligibilityResult"
+    "EligibilityResult",
+    "EligibilityStatus"
 ]

@@ -18,6 +18,9 @@ from .models import (
 class EligibilityChecker:
     """Checks user eligibility for government schemes using AI"""
     
+    # Maximum content length for AI prompts to avoid token limits
+    MAX_CONTENT_LENGTH = 4000
+    
     def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4-turbo-preview"):
         """
         Initialize eligibility checker with OpenAI API.
@@ -50,7 +53,7 @@ Extract the eligibility criteria from the following scheme document.
 Scheme Title: {scheme_doc.title}
 
 Document Content:
-{scheme_doc.content[:4000]}  # Limit to first 4000 chars to avoid token limits
+{scheme_doc.content[:self.MAX_CONTENT_LENGTH]}
 
 Extract and structure the following information:
 1. Age range (if specified) - provide as [min_age, max_age]
@@ -141,8 +144,8 @@ Title: {scheme_doc.title}
 Extracted Eligibility Criteria:
 {scheme_doc.eligibility_criteria.model_dump_json(indent=2)}
 
-Full Document Content (first 3000 chars):
-{scheme_doc.content[:3000]}
+Full Document Content (first {self.MAX_CONTENT_LENGTH} chars):
+{scheme_doc.content[:self.MAX_CONTENT_LENGTH]}
 
 TASK:
 Analyze the user's profile against the scheme's eligibility criteria and provide:

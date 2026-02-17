@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from docu_agent.pdf_extractor import PDFExtractor
 from docu_agent.eligibility_checker import EligibilityChecker
 from docu_agent.action_plan_generator import ActionPlanGenerator
-from docu_agent.models import UserProfile, Gender, Category, EducationLevel
+from docu_agent.models import UserProfile, Gender, Category, EducationLevel, EligibilityStatus
 
 
 def load_user_profile_from_json(json_path: str) -> UserProfile:
@@ -74,7 +74,7 @@ def print_eligibility_result(result):
     print("="*80)
     
     # Status with color-like indicators
-    status_symbol = "✓" if result.status == "Eligible" else "✗" if result.status == "Not Eligible" else "~"
+    status_symbol = "✓" if result.status == EligibilityStatus.ELIGIBLE else "✗" if result.status == EligibilityStatus.NOT_ELIGIBLE else "~"
     print(f"\n{status_symbol} STATUS: {result.status}")
     print(f"   Confidence: {result.confidence_score*100:.1f}%")
     
