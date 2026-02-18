@@ -142,7 +142,7 @@
         </div>
         
         <h1>✅ Authentication Successful!</h1>
-        <p class="subtitle">You have successfully signed in with Google</p>
+        <p class="subtitle">Redirecting you to {% if redirect_to == 'onboarding' %}complete your profile{% else %}your dashboard{% endif %}...</p>
 
         <div class="info-box">
             <div class="info-row">
@@ -166,23 +166,28 @@
         <div class="redirect-info">
             💡 <strong>Next Steps:</strong><br>
             {% if redirect_to == 'onboarding' %}
-            Complete your profile to start using Eligify
+            Please complete your profile to start using Eligify
             {% else %}
-            You're all set! Access your dashboard
+            Welcome back! Taking you to your dashboard
             {% endif %}
         </div>
 
-        <div class="btn-container">
+        <div class="btn-container" style="display: none;">
             <a href="/api/auth/test-oauth/" class="btn btn-secondary">← Back to Test Page</a>
             <a href="/admin/" class="btn">Go to Admin Panel</a>
         </div>
 
         <script>
-            // Store tokens in localStorage for demo
+            // Store tokens in localStorage
             localStorage.setItem('access_token', '{{ access_token }}');
             localStorage.setItem('refresh_token', '{{ refresh_token }}');
             console.log('Tokens stored in localStorage');
             console.log('Redirect destination: {{ redirect_to }}');
+            
+            // Immediately redirect to the appropriate page
+            setTimeout(function() {
+                window.location.href = '{{ frontend_url }}';
+            }, 1000);
         </script>
     </div>
 </body>

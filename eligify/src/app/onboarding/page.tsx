@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Calendar } from "lucide-react";
 import { EligifyLogo } from "@/components/ui/eligify-logo";
+import axios from "axios";
 
 const STATES = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -21,6 +22,31 @@ export default function Onboarding() {
     const router = useRouter();
     const [formData, setFormData] = useState({ state: "", gender: "", dob: "" });
     const [age, setAge] = useState<number | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        // Check if tokens are passed via URL parameters (from OAuth callback)
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlAccessToken = urlParams.get('access_token');
+        const urlRefreshToken = urlParams.get('refresh_token');
+        
+        if (urlAccessToken && urlRefreshToken) {
+            // Store tokens from URL
+            localStorage.setItem('access_token', urlAccessToken);
+            localStorage.setItem('refresh_token', urlRefreshToken);
+            
+            // Clean URL by removing query parameters
+            window.history.replaceState({}, document.title, '/onboarding');
+        }
+        
+        // Check if user has access token
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            // Redirect to home if not authenticated
+            router.push('/');
+        }
+    }, [router]);
 
     useEffect(() => {
         if (formData.dob) {
@@ -39,10 +65,45 @@ export default function Onboarding() {
 
     const isValid = formData.state && formData.gender && age !== null;
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (isValid) {
+        if (!isValid) return;
+
+        setLoading(true);
+        setError(null);
+
+        try {
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            // Submit profile data to Django backend
+            const response = await axios.patch(
+                'http://127.0.0.1:8000/api/auth/profile/update/',
+                {
+                    state: formData.state,
+                    gender: formData.gender,
+                    dob: formData.dob
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            console.log('Profile updated successfully:', response.data);
+            
+            // Redirect to dashboard after successful update
             router.push("/dashboard");
+        } catch (err: any) {
+            console.error('Profile update error:', err);
+            setError(err.response?.data?.error || 'Failed to update profile. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -69,6 +130,12 @@ export default function Onboarding() {
                         This helps us determine your eligibility accurately
                     </p>
                 </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                        <p className="text-red-400 text-sm">{error}</p>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* State Selection */}
@@ -136,16 +203,25 @@ export default function Onboarding() {
                     {/* Submit Button */}
                     <button
                         type="submit"
-                        disabled={!isValid}
+                        disabled={!isValid || loading}
                         className={cn(
                             "w-full py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all mt-8",
-                            isValid
+                            isValid && !loading
                                 ? "bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-white hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]"
                                 : "bg-[#1F2937] text-[#4B5563] cursor-not-allowed"
                         )}
                     >
-                        Continue to Dashboard
-                        <ChevronRight className="w-5 h-5" />
+                        {loading ? (
+                            <>
+                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                Updating Profile...
+                            </>
+                        ) : (
+                            <>
+                                Continue to Dashboard
+                                <ChevronRight className="w-5 h-5" />
+                            </>
+                        )}
                     </button>
                 </form>
             </motion.div>

@@ -158,12 +158,18 @@ def auth_callback_view(request):
             'error': 'Missing authentication tokens'
         })
     
-    # Store tokens in session for demonstration
-    # In production, you'd handle this more securely
+    # Build the frontend URL with tokens
+    if redirect_to == 'onboarding':
+        frontend_url = f"/onboarding?access_token={access_token}&refresh_token={refresh_token}"
+    else:
+        frontend_url = f"/dashboard?access_token={access_token}&refresh_token={refresh_token}"
+    
+    # Render a redirect page that stores tokens and redirects
     context = {
         'access_token': access_token,
         'refresh_token': refresh_token,
         'redirect_to': redirect_to,
+        'frontend_url': frontend_url,
     }
     
     return render(request, 'auth_callback.html', context)

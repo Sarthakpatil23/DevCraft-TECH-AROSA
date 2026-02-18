@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/auth/', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),  # Allauth URLs for social auth
     
-    # Serve Next.js static files in development
+    # Serve Next.js static files
     re_path(r'^_next/(?P<path>.*)$', serve, {
         'document_root': os.path.join(settings.NEXTJS_BUILD_DIR, '_next'),
     }),
@@ -39,6 +39,8 @@ urlpatterns = [
         'document_root': os.path.join(settings.NEXTJS_BUILD_DIR, 'static'),
     }),
     
-    # Home page - serve Next.js index.html
+    # Next.js pages
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
+    path('onboarding/', TemplateView.as_view(template_name='onboarding.html'), name='onboarding'),
+    path('dashboard/', TemplateView.as_view(template_name='dashboard.html'), name='dashboard'),
 ]
