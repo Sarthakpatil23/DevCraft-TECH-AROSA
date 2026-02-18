@@ -15,7 +15,8 @@ By bridging the gap between bureaucratic logic and citizen needs, Eligify ensure
 ## 🛠️ Tech Stack
 
 -   **Frontend**: Next.js 15 (React), TypeScript, Tailwind CSS, Framer Motion, Lucide Icons.
--   **Backend**: Django (Python), Django REST Framework.
+-   **Backend**: Django (Python), Django REST Framework, django-allauth (Google OAuth).
+-   **Authentication**: JWT tokens with djangorestframework-simplejwt.
 -   **Architecture**: Static export of Next.js frontend served via Django static file handling.
 
 ## 📋 Getting Started
@@ -74,6 +75,13 @@ Follow these instructions to set up and run the project locally.
     
     # Apply database migrations
     python manage.py migrate
+    
+    # Configure Google OAuth (Required for authentication)
+    # Run the following command to set up OAuth credentials:
+    python manage.py shell -c "from allauth.socialaccount.models import SocialApp; from django.contrib.sites.models import Site; site = Site.objects.get(id=1); site.domain = '127.0.0.1:8000'; site.name = 'Eligify Local'; site.save(); app, created = SocialApp.objects.get_or_create(provider='google', name='Google OAuth', defaults={'client_id': 'YOUR_GOOGLE_CLIENT_ID', 'secret': 'YOUR_GOOGLE_CLIENT_SECRET'}); app.sites.add(site); print('Google OAuth configured')"
+    
+    # Replace YOUR_GOOGLE_CLIENT_ID and YOUR_GOOGLE_CLIENT_SECRET with your actual Google OAuth credentials
+    # Get credentials from: https://console.cloud.google.com/apis/credentials
     ```
 
 ### 🏃‍♂️ Running the Application
@@ -93,10 +101,37 @@ Once both frontend build and backend setup are complete:
 
     You should see the Eligify application running. The Django server acts as the primary host, serving the Next.js frontend and handling API requests.
 
+## 🔐 Google OAuth Setup
+
+1.  **Create Google OAuth Credentials**:
+    -   Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+    -   Create a new OAuth 2.0 Client ID
+    -   Add authorized redirect URI: `http://127.0.0.1:8000/accounts/google/login/callback/`
+
+2.  **Configure in Django**:
+    -   After running migrations, use the shell command provided in the Backend Setup section
+    -   Replace `YOUR_GOOGLE_CLIENT_ID` and `YOUR_GOOGLE_CLIENT_SECRET` with your actual credentials
+
+3.  **Authentication Flow**:
+    -   Users click "Continue with Google" on the homepage
+    -   After successful OAuth, new users are redirected to onboarding
+    -   Returning users with completed profiles go directly to dashboard
+    -   JWT tokens are stored in localStorage for API authentication
+
 ## 🧪 Development Workflow
 
 -   **Frontend Changes**: If you are working on the UI, you can run `npm run dev` inside the `eligify` folder for hot-reloading development. However, to see changes reflected on the Django port (8000), you must run `npm run build` again.
 -   **Backend Changes**: Django will auto-reload on python file changes.
+-   **OAuth Testing**: Always test OAuth flow on `http://127.0.0.1:8000/` (not `localhost`)
+
+## 📡 Key API Endpoints
+
+-   **Homepage**: `http://127.0.0.1:8000/` - Landing page with Google OAuth
+-   **Google OAuth Login**: `http://127.0.0.1:8000/accounts/google/login/` - Initiate OAuth flow
+-   **OAuth Callback**: `http://127.0.0.1:8000/auth/callback/` - OAuth success handler with JWT generation
+-   **Onboarding**: `http://127.0.0.1:8000/onboarding/` - Profile completion form for new users
+-   **Dashboard**: `http://127.0.0.1:8000/dashboard/` - User dashboard (requires authentication)
+-   **Profile Update API**: `http://127.0.0.1:8000/api/auth/profile/update/` - PATCH endpoint to update user profile
 
 ## 🤝 Contribution
 
