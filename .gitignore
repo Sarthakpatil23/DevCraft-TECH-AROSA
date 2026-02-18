@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/.env
+backend/db.sqlite3
+
+# Node.js
+eligify/node_modules/
+eligify/.next/
+eligify/out/
+eligify/.env.local
+eligify/.env.development.local
+eligify/.env.test.local
+eligify/.env.production.local
+eligify/npm-debug.log*
+eligify/yarn-debug.log*
+eligify/yarn-error.log*
+
+# General
+.DS_Store
+.vscode/
+.idea/
+*.log
