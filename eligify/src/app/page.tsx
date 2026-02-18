@@ -47,8 +47,8 @@ export default function Home() {
           },
         ]}
         contactButton={{
-          label: "Contact Us",
-          onClick: () => console.log("Contact clicked"),
+          label: "Get Started",
+          onClick: () => console.log("Get Started clicked"),
         }}
         title="Instant Policy"
         highlightedText="Decision Engine"
