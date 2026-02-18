@@ -1,0 +1,406 @@
+"use client";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import {
+    LayoutDashboard,
+    User,
+    Search,
+    Upload,
+    ClipboardList,
+    FileCheck,
+    BookOpen,
+    Bell,
+    LogOut,
+    ChevronRight,
+    Shield,
+    CheckCircle2,
+    X,
+    Menu,
+    ExternalLink,
+    Play,
+    Clock,
+    FileText,
+    BookMarked,
+    HelpCircle,
+    Video,
+    GraduationCap,
+    AlertTriangle,
+    ListChecks,
+    ChevronDown,
+    ChevronUp,
+    Lightbulb,
+    Target,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+
+// ─── Sidebar Items ──────────────────────────────────────────────────
+const sidebarItems = [
+    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
+    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+];
+
+// ─── Types ──────────────────────────────────────────────────────────
+interface Resource {
+    id: string;
+    title: string;
+    description: string;
+    type: "video" | "guide" | "faq";
+    category: string;
+    duration?: string;
+    icon: React.ElementType;
+}
+
+interface FAQ {
+    id: string;
+    question: string;
+    answer: string;
+}
+
+// ─── Mock Data ──────────────────────────────────────────────────────
+const CATEGORIES = [
+    { key: "all", label: "All" },
+    { key: "scholarships", label: "Scholarships" },
+    { key: "application", label: "Application Tips" },
+    { key: "eligibility", label: "Eligibility" },
+    { key: "walkthrough", label: "Walkthroughs" },
+];
+
+const RESOURCES: Resource[] = [
+    {
+        id: "vid-1",
+        title: "How to Apply for Government Scholarships",
+        description: "Complete walkthrough of the National Scholarship Portal application process, from registration to final submission.",
+        type: "video",
+        category: "scholarships",
+        duration: "12 min",
+        icon: GraduationCap,
+    },
+    {
+        id: "vid-2",
+        title: "Step-by-Step NSP Application Guide",
+        description: "Detailed screen recording showing every step of applying through the National Scholarship Portal.",
+        type: "video",
+        category: "walkthrough",
+        duration: "18 min",
+        icon: Video,
+    },
+    {
+        id: "vid-3",
+        title: "Understanding Eligibility Criteria",
+        description: "Learn how eligibility rules work across different government schemes and how to maximize your chances.",
+        type: "video",
+        category: "eligibility",
+        duration: "8 min",
+        icon: Target,
+    },
+    {
+        id: "guide-1",
+        title: "5 Common Mistakes in Scheme Applications",
+        description: "Avoid these frequent errors that lead to application rejection. Based on analysis of 10,000+ applications.",
+        type: "guide",
+        category: "application",
+        icon: AlertTriangle,
+    },
+    {
+        id: "guide-2",
+        title: "Scholarship Application Checklist",
+        description: "A comprehensive pre-submission checklist to ensure your scholarship application is complete and error-free.",
+        type: "guide",
+        category: "scholarships",
+        icon: ListChecks,
+    },
+    {
+        id: "guide-3",
+        title: "How to Read Scheme Eligibility Documents",
+        description: "A beginner's guide to understanding complex government scheme documents and eligibility requirements.",
+        type: "guide",
+        category: "eligibility",
+        icon: BookMarked,
+    },
+    {
+        id: "guide-4",
+        title: "Making the Most of DigiLocker",
+        description: "How to use DigiLocker to speed up your scheme applications and keep your documents verified and accessible.",
+        type: "guide",
+        category: "application",
+        icon: Lightbulb,
+    },
+    {
+        id: "vid-4",
+        title: "PM Kisan Registration Walkthrough",
+        description: "Full video walkthrough of registering for PM Kisan Samman Nidhi including Aadhaar e-KYC steps.",
+        type: "video",
+        category: "walkthrough",
+        duration: "15 min",
+        icon: Play,
+    },
+];
+
+const FAQS: FAQ[] = [
+    {
+        id: "faq-1",
+        question: "How does Eligify determine my eligibility?",
+        answer: "Eligify uses a deterministic rule engine that compares your verified profile data against scheme eligibility criteria. We extract conditions from official scheme documents and check each requirement against your profile. No guesswork — only factual matching.",
+    },
+    {
+        id: "faq-2",
+        question: "Is my data secure on Eligify?",
+        answer: "Absolutely. Your data is encrypted at rest and in transit. DigiLocker integration uses OAuth 2.0 for secure access. We never store your raw documents — only verified data points needed for eligibility checks. You can delete your account and data at any time.",
+    },
+    {
+        id: "faq-3",
+        question: "Can I apply for schemes directly through Eligify?",
+        answer: "Eligify guides you through the application process and provides direct links to official portals. We don't submit applications on your behalf to ensure you maintain full control of your applications.",
+    },
+    {
+        id: "faq-4",
+        question: "What if my eligibility shows 'Partial Match'?",
+        answer: "A partial match means you meet some but not all criteria. Check the Scheme Intelligence page to see which conditions aren't met. Some can be resolved by updating your profile, while others may indicate genuine ineligibility.",
+    },
+    {
+        id: "faq-5",
+        question: "How often are scheme databases updated?",
+        answer: "We update our scheme database weekly with new schemes, deadline changes, and eligibility modifications. You'll receive notifications when schemes you've evaluated have important updates.",
+    },
+    {
+        id: "faq-6",
+        question: "Can I upload custom scheme documents?",
+        answer: "Yes! Use the 'Upload Scheme' feature to upload any scheme PDF. Our engine will extract eligibility criteria and check them against your profile, just like preloaded schemes.",
+    },
+];
+
+// ─── NotifBadge ─────────────────────────────────────────────────────
+function NotifBadge({ count }: { count: number }) {
+    if (count === 0) return null;
+    return (
+        <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[#0a0a0a]">
+            {count}
+        </motion.span>
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// RESOURCES PAGE
+// ═══════════════════════════════════════════════════════════════════
+export default function ResourcesPage() {
+    const router = useRouter();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [activeCategory, setActiveCategory] = useState("all");
+    const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if (!token) router.push("/");
+    }, [router]);
+
+    const handleLogout = () => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        router.push("/");
+    };
+
+    const filteredResources =
+        activeCategory === "all"
+            ? RESOURCES
+            : RESOURCES.filter((r) => r.category === activeCategory);
+
+    const videos = filteredResources.filter((r) => r.type === "video");
+    const guides = filteredResources.filter((r) => r.type === "guide");
+
+    return (
+        <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+            {/* ═══ SIDEBAR ═══ */}
+            <AnimatePresence>
+                {sidebarOpen && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/60 z-40 lg:hidden" />
+                )}
+            </AnimatePresence>
+            <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[#0e0e0e] border-r border-white/[0.06] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
+                <div className="p-6 pb-4 flex items-center gap-3">
+                    <img src="/logo.png" alt="Eligify" className="h-10 w-auto object-contain" />
+                    <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-white/40 hover:text-white"><X className="w-5 h-5" /></button>
+                </div>
+                <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
+                    <p className="text-[10px] text-white/30 mt-1">Documents verified & secure</p>
+                </div>
+                <div className="mx-4 border-t border-white/[0.04] mb-2" />
+                <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
+                    {sidebarItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = item.id === "resources";
+                        return (
+                            <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-white/[0.08] text-white" : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]")}>
+                                {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
+                                <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
+                                {item.label}
+                            </button>
+                        );
+                    })}
+                </nav>
+                <div className="p-4 border-t border-white/[0.04]">
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                </div>
+            </aside>
+
+            {/* ═══ MAIN ═══ */}
+            <main className="flex-1 lg:ml-[260px] min-h-screen">
+                {/* Top Bar */}
+                <motion.header initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.04] px-4 lg:px-8 py-4 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-white/50 hover:text-white"><Menu className="w-6 h-6" /></button>
+                        <div className="flex items-center gap-2">
+                            <button onClick={() => router.push("/dashboard")} className="text-white/30 hover:text-white/60 text-sm">Dashboard</button>
+                            <ChevronRight className="w-3.5 h-3.5 text-white/15" />
+                            <span className="text-sm text-white font-medium">Resources</span>
+                        </div>
+                    </div>
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-white/80 border border-white/[0.1]">R</div>
+                </motion.header>
+
+                <div className="px-4 lg:px-8 py-8 max-w-[960px] mx-auto">
+                    {/* Header */}
+                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.06] flex items-center justify-center">
+                                <BookOpen className="w-5 h-5 text-white/40" />
+                            </div>
+                            <h1 className="text-2xl font-bold text-white">Resources</h1>
+                        </div>
+                        <p className="text-sm text-white/30">Learn how to apply for schemes correctly</p>
+                    </motion.div>
+
+                    {/* Category Tabs */}
+                    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-2 mb-8 overflow-x-auto pb-1 scrollbar-none">
+                        {CATEGORIES.map((cat) => (
+                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={cn("px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border", activeCategory === cat.key ? "bg-white/[0.08] text-white border-white/[0.1]" : "bg-transparent text-white/30 border-white/[0.04] hover:bg-white/[0.03] hover:text-white/50")}>
+                                {cat.label}
+                            </button>
+                        ))}
+                    </motion.div>
+
+                    {/* ── Video Section ── */}
+                    {videos.length > 0 && (
+                        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-10">
+                            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <Video className="w-3.5 h-3.5" />Video Guides
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {videos.map((resource, i) => {
+                                    const Icon = resource.icon;
+                                    return (
+                                        <motion.div key={resource.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }} className="bg-[#111111] border border-white/[0.06] rounded-xl overflow-hidden hover:border-white/[0.12] transition-all group cursor-pointer">
+                                            {/* Thumbnail */}
+                                            <div className="relative h-36 bg-gradient-to-br from-white/[0.02] to-white/[0.005] flex items-center justify-center overflow-hidden">
+                                                <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent z-10" />
+                                                <Icon className="w-10 h-10 text-white/[0.06]" />
+                                                <div className="absolute inset-0 flex items-center justify-center z-20">
+                                                    <div className="w-11 h-11 rounded-full bg-white/[0.08] border border-white/[0.1] flex items-center justify-center backdrop-blur-sm group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 transition-colors">
+                                                        <Play className="w-4 h-4 text-white/60 ml-0.5 group-hover:text-emerald-400 transition-colors" />
+                                                    </div>
+                                                </div>
+                                                {resource.duration && (
+                                                    <Badge className="absolute bottom-2 right-2 z-20 bg-black/60 text-white/60 border-white/[0.08] text-[9px] gap-1 backdrop-blur-sm">
+                                                        <Clock className="w-2.5 h-2.5" />{resource.duration}
+                                                    </Badge>
+                                                )}
+                                            </div>
+                                            {/* Info */}
+                                            <div className="p-4">
+                                                <h3 className="text-sm font-semibold text-white mb-1 line-clamp-1 group-hover:text-emerald-400/80 transition-colors">{resource.title}</h3>
+                                                <p className="text-[11px] text-white/25 leading-relaxed line-clamp-2">{resource.description}</p>
+                                                <div className="flex items-center justify-between mt-3">
+                                                    <Badge className="bg-white/[0.04] text-white/20 border-white/[0.05] text-[9px]">{CATEGORIES.find((c) => c.key === resource.category)?.label}</Badge>
+                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">Watch<Play className="w-3 h-3" /></span>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* ── Guides Section ── */}
+                    {guides.length > 0 && (
+                        <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10">
+                            <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <FileText className="w-3.5 h-3.5" />Guides & Articles
+                            </h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {guides.map((resource, i) => {
+                                    const Icon = resource.icon;
+                                    return (
+                                        <motion.div key={resource.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }} className="bg-[#111111] border border-white/[0.06] rounded-xl p-5 hover:border-white/[0.12] transition-all group cursor-pointer">
+                                            <div className="flex items-start gap-3">
+                                                <div className="w-9 h-9 rounded-lg bg-white/[0.04] border border-white/[0.05] flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/[0.06] group-hover:border-emerald-500/[0.1] transition-colors">
+                                                    <Icon className="w-4 h-4 text-white/25 group-hover:text-emerald-400 transition-colors" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-sm font-semibold text-white mb-1 line-clamp-1 group-hover:text-emerald-400/80 transition-colors">{resource.title}</h3>
+                                                    <p className="text-[11px] text-white/25 leading-relaxed line-clamp-2">{resource.description}</p>
+                                                    <div className="flex items-center justify-between mt-3">
+                                                        <Badge className="bg-white/[0.04] text-white/20 border-white/[0.05] text-[9px]">{CATEGORIES.find((c) => c.key === resource.category)?.label}</Badge>
+                                                        <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">Read<ChevronRight className="w-3 h-3" /></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* ── FAQ Section ── */}
+                    <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
+                        <Separator className="bg-white/[0.04] mb-8" />
+                        <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-5 flex items-center gap-2">
+                            <HelpCircle className="w-3.5 h-3.5" />Frequently Asked Questions
+                        </h2>
+                        <div className="space-y-2">
+                            {FAQS.map((faq) => (
+                                <div key={faq.id} className="bg-[#111111] border border-white/[0.06] rounded-xl overflow-hidden">
+                                    <button onClick={() => setExpandedFaq(expandedFaq === faq.id ? null : faq.id)} className="w-full flex items-center justify-between p-4 text-left">
+                                        <span className="text-sm font-medium text-white/70 pr-4">{faq.question}</span>
+                                        {expandedFaq === faq.id ? (
+                                            <ChevronUp className="w-4 h-4 text-white/20 flex-shrink-0" />
+                                        ) : (
+                                            <ChevronDown className="w-4 h-4 text-white/20 flex-shrink-0" />
+                                        )}
+                                    </button>
+                                    <AnimatePresence>
+                                        {expandedFaq === faq.id && (
+                                            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                                                <div className="px-4 pb-4 pt-0">
+                                                    <Separator className="bg-white/[0.04] mb-3" />
+                                                    <p className="text-xs text-white/30 leading-relaxed">{faq.answer}</p>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            ))}
+                        </div>
+                    </motion.div>
+
+                    {/* Footer */}
+                    <div className="text-center py-10 border-t border-white/[0.04] mt-12">
+                        <p className="text-xs text-white/15">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}

@@ -12,29 +12,35 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #0a0a0a;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            color: #e5e5e5;
         }
         .container {
-            background: white;
+            background: #111111;
+            border: 1px solid #1a1a1a;
             border-radius: 20px;
             padding: 60px 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
             max-width: 500px;
             width: 100%;
             text-align: center;
         }
         h1 {
-            color: #333;
+            color: #ffffff;
             font-size: 32px;
             margin-bottom: 10px;
         }
         .subtitle {
-            color: #666;
+            color: #737373;
             font-size: 16px;
             margin-bottom: 40px;
         }
@@ -43,23 +49,23 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            background: white;
-            border: 2px solid #ddd;
+            background: #1a1a1a;
+            border: 1px solid #252525;
             padding: 14px 32px;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
-            color: #333;
+            color: #e5e5e5;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: none;
         }
         .google-btn:hover {
-            background: #f8f9fa;
-            border-color: #ccc;
+            background: #252525;
+            border-color: rgba(255,255,255,0.2);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(255,255,255,0.05);
         }
         .google-icon {
             width: 20px;
@@ -68,14 +74,15 @@
         .info {
             margin-top: 30px;
             padding: 20px;
-            background: #f0f0f0;
+            background: #1a1a1a;
+            border: 1px solid #252525;
             border-radius: 10px;
             font-size: 14px;
-            color: #666;
+            color: #737373;
             line-height: 1.6;
         }
         .info strong {
-            color: #333;
+            color: #ffffff;
             display: block;
             margin-bottom: 8px;
         }
@@ -86,14 +93,14 @@
             font-size: 14px;
         }
         .status.error {
-            background: #fee;
-            color: #c33;
-            border: 1px solid #fcc;
+            background: rgba(255,50,50,0.1);
+            color: #ff6b6b;
+            border: 1px solid rgba(255,50,50,0.2);
         }
         .status.success {
-            background: #efe;
-            color: #3c3;
-            border: 1px solid #cfc;
+            background: rgba(255,255,255,0.05);
+            color: #a1a1a1;
+            border: 1px solid rgba(255,255,255,0.1);
         }
     </style>
 </head>

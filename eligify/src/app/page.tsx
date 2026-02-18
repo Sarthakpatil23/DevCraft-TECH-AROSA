@@ -65,22 +65,22 @@ export default function Home() {
         }}
         featureIcons={[
           {
-            icon: <FileText className="text-white w-8 h-8" />,
+            icon: <FileText className="text-white/70 w-8 h-8" />,
             label: "Policy PDFs",
             position: { x: "10%", y: "20%" },
           },
           {
-            icon: <Brain className="text-white w-8 h-8" />,
+            icon: <Brain className="text-white/70 w-8 h-8" />,
             label: "AI Logic",
             position: { x: "15%", y: "60%" },
           },
           {
-            icon: <CheckCircle className="text-white w-8 h-8" />,
+            icon: <CheckCircle className="text-white/70 w-8 h-8" />,
             label: "Instant Result",
             position: { x: "80%", y: "25%" },
           },
           {
-            icon: <Users className="text-white w-8 h-8" />,
+            icon: <Users className="text-white/70 w-8 h-8" />,
             label: "Citizens",
             position: { x: "75%", y: "65%" },
           },
@@ -91,8 +91,8 @@ export default function Home() {
             name: "GovTech",
             logo: (
               <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5 text-white/50" />
-                <span className="text-white/50 font-semibold text-lg">GovTech</span>
+                <Shield className="w-5 h-5 text-white/40" />
+                <span className="text-white/40 font-semibold text-lg">GovTech</span>
               </div>
             ),
           },
@@ -100,8 +100,8 @@ export default function Home() {
             name: "ScholarLink",
             logo: (
               <div className="flex items-center gap-2">
-                <FileText className="w-5 h-5 text-white/50" />
-                <span className="text-white/50 font-semibold text-lg">ScholarLink</span>
+                <FileText className="w-5 h-5 text-white/40" />
+                <span className="text-white/40 font-semibold text-lg">ScholarLink</span>
               </div>
             ),
           },
@@ -109,8 +109,8 @@ export default function Home() {
             name: "CivicFlow",
             logo: (
               <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-white/50" />
-                <span className="text-white/50 font-semibold text-lg">CivicFlow</span>
+                <Users className="w-5 h-5 text-white/40" />
+                <span className="text-white/40 font-semibold text-lg">CivicFlow</span>
               </div>
             ),
           },
@@ -118,8 +118,8 @@ export default function Home() {
             name: "PolicyAI",
             logo: (
               <div className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-white/50" />
-                <span className="text-white/50 font-semibold text-lg">PolicyAI</span>
+                <Brain className="w-5 h-5 text-white/40" />
+                <span className="text-white/40 font-semibold text-lg">PolicyAI</span>
               </div>
             ),
           },

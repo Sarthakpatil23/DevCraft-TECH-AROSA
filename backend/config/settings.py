@@ -174,6 +174,7 @@ ACCOUNT_LOGIN_METHODS = {'email'}  # Updated from deprecated ACCOUNT_AUTHENTICAT
 ACCOUNT_EMAIL_VERIFICATION = 'none'  # Skip email verification for development
 SOCIALACCOUNT_AUTO_SIGNUP = True
 SOCIALACCOUNT_EMAIL_VERIFICATION = 'none'
+SOCIALACCOUNT_LOGIN_ON_GET = True  # Skip the "Continue to Google?" confirmation page
 
 # Google OAuth Settings
 SOCIALACCOUNT_PROVIDERS = {

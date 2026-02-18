@@ -72,8 +72,8 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
             className={cn(
                 "absolute left-1/2 top-1/2 cursor-pointer border-2 p-8 transition-all duration-500 ease-in-out",
                 isCenter
-                    ? "z-10 bg-[#1E3A8A] text-[#E5E7EB] border-[#06B6D4]"
-                    : "z-0 bg-[#111827] text-[#9CA3AF] border-[#1F2937] hover:border-[#06B6D4]/50"
+                    ? "z-10 bg-[#1a1a1a] text-white border-white/30"
+                    : "z-0 bg-[#111111] text-[#737373] border-[#1a1a1a] hover:border-white/20"
             )}
             style={{
                 width: cardSize,
@@ -85,11 +85,11 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
           translateY(${isCenter ? -65 : position % 2 ? 15 : -15}px)
           rotate(${isCenter ? 0 : position % 2 ? 2.5 : -2.5}deg)
         `,
-                boxShadow: isCenter ? "0px 8px 0px 4px rgba(6, 182, 212, 0.3)" : "0px 0px 0px 0px transparent"
+                boxShadow: isCenter ? "0px 8px 0px 4px rgba(255, 255, 255, 0.1)" : "0px 0px 0px 0px transparent"
             }}
         >
             <span
-                className="absolute block origin-top-right rotate-45 bg-[#06B6D4]"
+                className="absolute block origin-top-right rotate-45 bg-white/30"
                 style={{
                     right: -2,
                     top: 48,
@@ -103,18 +103,18 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
                 alt={`${testimonial.by.split(',')[0]}`}
                 className="mb-4 h-14 w-12 bg-muted object-cover object-top"
                 style={{
-                    boxShadow: "3px 3px 0px #06B6D4"
+                    boxShadow: "3px 3px 0px white"
                 }}
             />
             <h3 className={cn(
                 "text-base sm:text-xl font-medium",
-                isCenter ? "text-[#FFFFFF]" : "text-[#E5E7EB]"
+                isCenter ? "text-[#FFFFFF]" : "text-white/80"
             )}>
                 "{testimonial.testimonial}"
             </h3>
             <p className={cn(
                 "absolute bottom-8 left-8 right-8 mt-2 text-sm italic",
-                isCenter ? "text-[#E5E7EB]/80" : "text-[#9CA3AF]"
+                isCenter ? "text-white/70" : "text-[#737373]"
             )}>
                 - {testimonial.by}
             </p>
@@ -158,14 +158,14 @@ export const StaggerTestimonials: React.FC = () => {
     return (
         <section
             id="testimonials"
-            className="relative w-full overflow-hidden bg-[#0B1220] py-12"
+            className="relative w-full overflow-hidden bg-[#0a0a0a] py-12"
             style={{ height: 700 }}
         >
             <div className="absolute top-8 left-0 right-0 text-center z-10 pointer-events-none">
-                <h2 className="text-sm font-semibold text-[#06B6D4] tracking-widest uppercase mb-2">
+                <h2 className="text-sm font-semibold text-white/60 tracking-widest uppercase mb-2">
                     Testimonials
                 </h2>
-                <h3 className="text-3xl font-bold text-[#E5E7EB]">
+                <h3 className="text-3xl font-bold text-white">
                     What People Say
                 </h3>
             </div>
@@ -189,8 +189,8 @@ export const StaggerTestimonials: React.FC = () => {
                     onClick={() => handleMove(-1)}
                     className={cn(
                         "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-                        "bg-[#111827] border-2 border-[#1F2937] text-[#E5E7EB] hover:bg-[#1E3A8A] hover:text-[#FFFFFF] hover:border-[#06B6D4]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-2"
+                        "bg-[#111111] border-2 border-[#1a1a1a] text-white hover:bg-[#1a1a1a] hover:text-white hover:border-white/30",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2"
                     )}
                     aria-label="Previous testimonial"
                 >
@@ -200,8 +200,8 @@ export const StaggerTestimonials: React.FC = () => {
                     onClick={() => handleMove(1)}
                     className={cn(
                         "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-                        "bg-[#111827] border-2 border-[#1F2937] text-[#E5E7EB] hover:bg-[#1E3A8A] hover:text-[#FFFFFF] hover:border-[#06B6D4]",
-                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#06B6D4] focus-visible:ring-offset-2"
+                        "bg-[#111111] border-2 border-[#1a1a1a] text-white hover:bg-[#1a1a1a] hover:text-white hover:border-white/30",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2"
                     )}
                     aria-label="Next testimonial"
                 >

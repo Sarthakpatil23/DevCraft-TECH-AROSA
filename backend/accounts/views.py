@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect
 from django.contrib.auth import login
 from allauth.socialaccount.models import SocialAccount
 from .serializers import RegisterSerializer, UserSerializer, UserProfileUpdateSerializer
@@ -123,53 +123,11 @@ def google_callback(request):
     # Generate JWT tokens
     tokens = get_tokens_for_user(user)
     
-    # Prepare redirect URL with tokens and user status
+    # Redirect directly to the appropriate frontend page with tokens
     if has_completed_onboarding:
-        redirect_url = f"http://127.0.0.1:8000/auth/callback?access_token={tokens['access']}&refresh_token={tokens['refresh']}&redirect=dashboard"
+        redirect_url = f"/dashboard?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
     else:
-        redirect_url = f"http://127.0.0.1:8000/auth/callback?access_token={tokens['access']}&refresh_token={tokens['refresh']}&redirect=onboarding"
+        redirect_url = f"/onboarding?access_token={tokens['access']}&refresh_token={tokens['refresh']}"
     
     print(f"Redirecting to: {redirect_url}")
     return redirect(redirect_url)
-
-
-def test_oauth_view(request):
-    """
-    Simple test page for Google OAuth on Django server
-    """
-    error = request.GET.get('error', None)
-    return render(request, 'test_oauth.html', {
-        'error': error,
-        'user': request.user
-    })
-
-
-def auth_callback_view(request):
-    """
-    Handles the OAuth callback with tokens and redirects appropriately.
-    This is where users land after successful Google authentication.
-    """
-    access_token = request.GET.get('access_token')
-    refresh_token = request.GET.get('refresh_token')
-    redirect_to = request.GET.get('redirect', 'dashboard')
-    
-    if not access_token or not refresh_token:
-        return render(request, 'auth_error.html', {
-            'error': 'Missing authentication tokens'
-        })
-    
-    # Build the frontend URL with tokens
-    if redirect_to == 'onboarding':
-        frontend_url = f"/onboarding?access_token={access_token}&refresh_token={refresh_token}"
-    else:
-        frontend_url = f"/dashboard?access_token={access_token}&refresh_token={refresh_token}"
-    
-    # Render a redirect page that stores tokens and redirects
-    context = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'redirect_to': redirect_to,
-        'frontend_url': frontend_url,
-    }
-    
-    return render(request, 'auth_callback.html', context)

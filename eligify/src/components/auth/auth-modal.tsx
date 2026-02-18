@@ -61,7 +61,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={onClose}
-                className="fixed inset-0 z-50 bg-[#0B1220]/80 backdrop-blur-sm"
+                className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm"
             />
 
             <motion.div
@@ -70,19 +70,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
             >
-                <div className="bg-[#111827] border border-[#1F2937] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
+                <div className="bg-[#111111] border border-[#1a1a1a] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#E5E7EB] transition-colors"
+                        className="absolute top-4 right-4 text-[#737373] hover:text-white transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
 
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-[#E5E7EB] mb-2">
+                        <h2 className="text-2xl font-bold text-white mb-2">
                             {mode === "login" ? "Welcome to Eligify" : "Create an Account"}
                         </h2>
-                        <p className="text-[#9CA3AF] text-sm">
+                        <p className="text-[#737373] text-sm">
                             {mode === "login"
                                 ? "Sign in to check your eligibility"
                                 : "Join thousands of citizens getting benefits"}
@@ -101,9 +101,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
                     <div className="relative flex items-center justify-center my-6">
                         <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-[#1F2937]"></div>
+                            <div className="w-full border-t border-[#1a1a1a]"></div>
                         </div>
-                        <span className="relative bg-[#111827] px-4 text-xs text-[#6B7280] uppercase">
+                        <span className="relative bg-[#111111] px-4 text-xs text-[#525252] uppercase">
                             Or continue with email
                         </span>
                     </div>
@@ -111,11 +111,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                     <form onSubmit={handleEmailAuth} className="space-y-4">
                         <div className="space-y-2">
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#737373]" />
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                     required
                                 />
                             </div>
@@ -123,11 +123,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
                         <div className="space-y-2">
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#737373]" />
                                 <input
                                     type="password"
                                     placeholder="Password"
-                                    className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                     required
                                 />
                             </div>
@@ -136,11 +136,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         {mode === "signup" && (
                             <div className="space-y-2">
                                 <div className="relative">
-                                    <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                    <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#737373]" />
                                     <input
                                         type="password"
                                         placeholder="Confirm Password"
-                                        className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                        className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                         required
                                     />
                                 </div>
@@ -149,20 +149,20 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
                         <button
                             type="submit"
-                            className="w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#06B6D4]/20 transition-all flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-white text-black font-semibold rounded-lg hover:bg-white/90 hover:shadow-lg hover:shadow-white/10 transition-all flex items-center justify-center gap-2"
                         >
                             {mode === "login" ? "Login" : "Create Account"}
                             <ArrowRight className="w-4 h-4" />
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center text-sm text-[#9CA3AF]">
+                    <div className="mt-6 text-center text-sm text-[#737373]">
                         {mode === "login" ? (
                             <>
                                 New here?{" "}
                                 <button
                                     onClick={() => setMode("signup")}
-                                    className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
+                                    className="text-white hover:underline transition-colors"
                                 >
                                     Sign up
                                 </button>
@@ -172,7 +172,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                 Already have an account?{" "}
                                 <button
                                     onClick={() => setMode("login")}
-                                    className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
+                                    className="text-white hover:underline transition-colors"
                                 >
                                     Log in
                                 </button>
