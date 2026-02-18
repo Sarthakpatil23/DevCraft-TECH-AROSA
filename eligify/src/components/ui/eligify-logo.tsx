@@ -1,15 +1,12 @@
 import React from "react";
-import Image from "next/image";
 
 export const EligifyLogo = ({ className }: { className?: string }) => (
-    <div className={`relative h-10 w-auto ${className}`}>
-        <Image
+    <div className={`flex items-center ${className}`}>
+        {/* Using standard img tag for automatic aspect ratio based on height */}
+        <img
             src="/logo.png"
             alt="Eligify Logo"
-            width={120} // Approximated width based on aspect ratio
-            height={40}
-            className="object-contain"
-            priority
+            className="h-[60px] w-auto object-contain hover:scale-105 transition-transform duration-300"
         />
     </div>
 );
