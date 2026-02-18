@@ -1,5 +1,7 @@
 "use client";
+import React, { useState } from "react";
 import { EligifyHero } from "@/components/ui/eligify-hero";
+import { AuthModal } from "@/components/auth/auth-modal";
 import { EligifyLogo } from "@/components/ui/eligify-logo";
 import { StaggerTestimonials } from "@/components/ui/stagger-testimonials";
 import { SolutionsSection } from "@/components/ui/solutions-section";
@@ -8,6 +10,10 @@ import { AboutSection } from "@/components/ui/about-section";
 import { FileText, Brain, Scale, Users, CheckCircle, Shield } from "lucide-react";
 
 export default function Home() {
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  const openAuthModal = () => setIsAuthModalOpen(true);
+
   return (
     <main>
       <EligifyHero
@@ -48,14 +54,14 @@ export default function Home() {
         ]}
         contactButton={{
           label: "Get Started",
-          onClick: () => console.log("Get Started clicked"),
+          onClick: openAuthModal,
         }}
         title="Instant Policy"
         highlightedText="Decision Engine"
         subtitle="Eligify is an AI-powered policy decision engine that helps citizens instantly understand their eligibility for government schemes, scholarships, and benefits. It converts complex rulebooks into actionable decisions."
         ctaButton={{
           label: "Check Eligibility",
-          onClick: () => console.log("Check Eligibility clicked"),
+          onClick: openAuthModal, // Also opening modal for Check Eligibility as it implies starting the process
         }}
         featureIcons={[
           {
@@ -124,6 +130,11 @@ export default function Home() {
       <SchemesSection />
       <AboutSection />
       <StaggerTestimonials />
-    </main >
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
+    </main>
   );
 }
