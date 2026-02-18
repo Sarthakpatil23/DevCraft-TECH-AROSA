@@ -15,24 +15,30 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from django.views.generic import TemplateView
 from django.conf import settings
 from django.views.static import serve
+from django.shortcuts import redirect
+from accounts.views import auth_callback_view
 import os
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', TemplateView.as_view(template_name='index.html')),
+    path('auth/callback/', auth_callback_view, name='auth_callback'),  # OAuth callback handler
+    path('api/auth/', include('accounts.urls')),
+    path('accounts/', include('allauth.urls')),  # Allauth URLs for social auth
     
     # Serve Next.js static files in development
     re_path(r'^_next/(?P<path>.*)$', serve, {
         'document_root': os.path.join(settings.NEXTJS_BUILD_DIR, '_next'),
     }),
     
-    # Catch-all for other static files (like logo.png, favicon.ico)
-    # WARNING: This should be last as it matches everything not matched above
-    re_path(r'^(?P<path>.*\..*)$', serve, {
-        'document_root': settings.NEXTJS_BUILD_DIR,
+    # Serve static files
+    re_path(r'^static/(?P<path>.*)$', serve, {
+        'document_root': os.path.join(settings.NEXTJS_BUILD_DIR, 'static'),
     }),
+    
+    # Home page - serve Next.js index.html
+    path('', TemplateView.as_view(template_name='index.html'), name='home'),
 ]

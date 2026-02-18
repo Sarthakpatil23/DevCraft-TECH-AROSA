@@ -2,8 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { X, Mail, Lock, CheckCircle, ArrowRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { X, Mail, Lock, ArrowRight, CheckCircle } from "lucide-react";
 
 interface AuthModalProps {
     isOpen: boolean;
@@ -38,18 +37,17 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (!isOpen) return null;
 
     const handleGoogleLogin = () => {
-        // Mock Google Login -> New User -> Onboarding
-        router.push("/onboarding");
-        onClose();
+        // Redirect to Django's Google OAuth endpoint
+        // This will redirect to Google, then back to our callback
+        window.location.href = 'http://127.0.0.1:8000/accounts/google/login/';
     };
 
     const handleEmailAuth = (e: React.FormEvent) => {
         e.preventDefault();
+        // Mock Email Auth for now
         if (mode === "login") {
-            // Mock Login -> Dashboard
             router.push("/dashboard");
         } else {
-            // Mock Signup -> Onboarding
             router.push("/onboarding");
         }
         onClose();
@@ -57,141 +55,132 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
     return (
         <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+            {/* Backdrop and Modal... (reusing existing UI) */}
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={onClose}
+                className="fixed inset-0 z-50 bg-[#0B1220]/80 backdrop-blur-sm"
+            />
+
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+            >
+                <div className="bg-[#111827] border border-[#1F2937] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
+                    <button
                         onClick={onClose}
-                        className="fixed inset-0 z-50 bg-[#0B1220]/80 backdrop-blur-sm"
-                    />
-
-                    {/* Modal */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+                        className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#E5E7EB] transition-colors"
                     >
-                        <div className="bg-[#111827] border border-[#1F2937] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
-                            {/* Close Button */}
-                            <button
-                                onClick={onClose}
-                                className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#E5E7EB] transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
+                        <X className="w-5 h-5" />
+                    </button>
 
-                            {/* Header */}
-                            <div className="text-center mb-8">
-                                <h2 className="text-2xl font-bold text-[#E5E7EB] mb-2">
-                                    {mode === "login" ? "Welcome to Eligify" : "Create an Account"}
-                                </h2>
-                                <p className="text-[#9CA3AF] text-sm">
-                                    {mode === "login"
-                                        ? "Sign in to check your eligibility"
-                                        : "Join thousands of citizens getting benefits"}
-                                </p>
-                            </div>
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-[#E5E7EB] mb-2">
+                            {mode === "login" ? "Welcome to Eligify" : "Create an Account"}
+                        </h2>
+                        <p className="text-[#9CA3AF] text-sm">
+                            {mode === "login"
+                                ? "Sign in to check your eligibility"
+                                : "Join thousands of citizens getting benefits"}
+                        </p>
+                    </div>
 
-                            {/* Google Button */}
-                            <button
-                                onClick={handleGoogleLogin}
-                                className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors mb-6"
-                            >
-                                <GoogleIcon />
-                                Continue with Google
-                            </button>
+                    {/* Google Button - Redirects to Django OAuth */}
+                    <button
+                        type="button"
+                        onClick={handleGoogleLogin}
+                        className="w-full flex items-center justify-center gap-3 bg-white text-gray-900 font-medium py-3 rounded-lg hover:bg-gray-100 transition-colors mb-2"
+                    >
+                        <GoogleIcon />
+                        Continue with Google
+                    </button>
 
-                            {/* Divider */}
-                            <div className="relative flex items-center justify-center mb-6">
-                                <div className="absolute inset-0 flex items-center">
-                                    <div className="w-full border-t border-[#1F2937]"></div>
-                                </div>
-                                <span className="relative bg-[#111827] px-4 text-xs text-[#6B7280] uppercase">
-                                    Or continue with email
-                                </span>
-                            </div>
+                    <div className="relative flex items-center justify-center my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-[#1F2937]"></div>
+                        </div>
+                        <span className="relative bg-[#111827] px-4 text-xs text-[#6B7280] uppercase">
+                            Or continue with email
+                        </span>
+                    </div>
 
-                            {/* Form */}
-                            <form onSubmit={handleEmailAuth} className="space-y-4">
-                                <div className="space-y-2">
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
-                                        <input
-                                            type="email"
-                                            placeholder="Email address"
-                                            className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
-                                        <input
-                                            type="password"
-                                            placeholder="Password"
-                                            className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                {mode === "signup" && (
-                                    <div className="space-y-2">
-                                        <div className="relative">
-                                            <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
-                                            <input
-                                                type="password"
-                                                placeholder="Confirm Password"
-                                                className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                )}
-
-                                <button
-                                    type="submit"
-                                    className="w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#06B6D4]/20 transition-all flex items-center justify-center gap-2"
-                                >
-                                    {mode === "login" ? "Login" : "Create Account"}
-                                    <ArrowRight className="w-4 h-4" />
-                                </button>
-                            </form>
-
-                            {/* Toggle Mode */}
-                            <div className="mt-6 text-center text-sm text-[#9CA3AF]">
-                                {mode === "login" ? (
-                                    <>
-                                        New here?{" "}
-                                        <button
-                                            onClick={() => setMode("signup")}
-                                            className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
-                                        >
-                                            Sign up
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        Already have an account?{" "}
-                                        <button
-                                            onClick={() => setMode("login")}
-                                            className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
-                                        >
-                                            Log in
-                                        </button>
-                                    </>
-                                )}
+                    <form onSubmit={handleEmailAuth} className="space-y-4">
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                <input
+                                    type="email"
+                                    placeholder="Email address"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                    required
+                                />
                             </div>
                         </div>
-                    </motion.div>
-                </>
-            )}
+
+                        <div className="space-y-2">
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                <input
+                                    type="password"
+                                    placeholder="Password"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        {mode === "signup" && (
+                            <div className="space-y-2">
+                                <div className="relative">
+                                    <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+                                    <input
+                                        type="password"
+                                        placeholder="Confirm Password"
+                                        className="w-full pl-10 pr-4 py-3 bg-[#1F2937] border border-[#374151] rounded-lg text-[#E5E7EB] focus:outline-none focus:border-[#06B6D4] placeholder:text-[#6B7280]"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        <button
+                            type="submit"
+                            className="w-full py-3 bg-gradient-to-r from-[#06B6D4] to-[#3B82F6] text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-[#06B6D4]/20 transition-all flex items-center justify-center gap-2"
+                        >
+                            {mode === "login" ? "Login" : "Create Account"}
+                            <ArrowRight className="w-4 h-4" />
+                        </button>
+                    </form>
+
+                    <div className="mt-6 text-center text-sm text-[#9CA3AF]">
+                        {mode === "login" ? (
+                            <>
+                                New here?{" "}
+                                <button
+                                    onClick={() => setMode("signup")}
+                                    className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
+                                >
+                                    Sign up
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                Already have an account?{" "}
+                                <button
+                                    onClick={() => setMode("login")}
+                                    className="text-[#06B6D4] hover:underline hover:text-[#3B82F6] transition-colors"
+                                >
+                                    Log in
+                                </button>
+                            </>
+                        )}
+                    </div>
+                </div>
+            </motion.div>
         </AnimatePresence>
     );
 }
