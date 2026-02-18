@@ -24,9 +24,11 @@ Follow these instructions to set up and run the project locally.
 
 ### Prerequisites
 
--   **Node.js** (v18 or higher)
--   **Python** (v3.10 or higher)
--   **Git**
+-   **Node.js**: v18.17.0 or higher (Required for Next.js 14+) - [Download](https://nodejs.org/)
+-   **Python**: v3.10 or higher (Recommended v3.11+) - [Download](https://www.python.org/downloads/)
+-   **Git**: For version control - [Download](https://git-scm.com/downloads)
+-   **npm** (Node Package Manager): Usually comes with Node.js.
+-   **pip** (Python Package Installer): Comes with Python.
 
 ### Installation
 
