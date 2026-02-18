@@ -1,12 +1,18 @@
 import React from "react";
+import { cn } from "@/lib/utils";
 
-export const EligifyLogo = ({ className }: { className?: string }) => (
-    <div className={`flex items-center ${className}`}>
-        {/* Using standard img tag for automatic aspect ratio based on height */}
+interface EligifyLogoProps {
+    className?: string; // Wrapper classes
+    imgClassName?: string; // Image specific classes
+}
+
+export const EligifyLogo = ({ className, imgClassName }: EligifyLogoProps) => (
+    <div className={cn("flex items-center justify-center", className)}>
+        {/* Optimized image tag with flexible sizing */}
         <img
             src="/logo.png"
             alt="Eligify Logo"
-            className="h-[60px] w-auto object-contain hover:scale-105 transition-transform duration-300"
+            className={cn("h-[60px] w-auto object-contain hover:scale-105 transition-transform duration-300", imgClassName)}
         />
     </div>
 );

@@ -11,7 +11,7 @@ interface FeatureIcon {
 }
 
 interface EligifyHeroProps {
-    logo?: string;
+    logo?: string | React.ReactNode;
     navigation?: Array<{
         label: string;
         onClick?: () => void;
@@ -43,9 +43,7 @@ export function EligifyHero({
         { label: "Home" },
         { label: "Features" },
         { label: "Pricing" },
-        { label: "About us" }, // Updated per instructions/demo context, generic fits better unless specific navigation needed. 
-        // Wait, the user prompt provided specific navigation in the demo "Home, Gallery, Cases, About us". I should probably keep it general or adapt? 
-        // Adapting to Eligify context: "Home", "How it Work", "Pricing", "Contact".
+        { label: "About us" },
     ],
     contactButton,
     title,
@@ -98,16 +96,22 @@ export function EligifyHero({
                 }}
             >
                 {/* Logo */}
-                <div
-                    style={{
-                        fontFamily: "Inter, sans-serif",
-                        fontWeight: 700,
-                        fontSize: "20px",
-                        color: "#E5E7EB",
-                    }}
-                >
-                    <span style={{ fontWeight: 400 }}>{logo.split(" ")[0]}</span>
-                    <span style={{ fontWeight: 700 }}>{logo.split(" ")[1] || ""}</span>
+                <div>
+                    {typeof logo === "string" ? (
+                        <div
+                            style={{
+                                fontFamily: "Inter, sans-serif",
+                                fontWeight: 700,
+                                fontSize: "20px",
+                                color: "#E5E7EB",
+                            }}
+                        >
+                            <span style={{ fontWeight: 400 }}>{logo.split(" ")[0]}</span>
+                            <span style={{ fontWeight: 700 }}>{logo.split(" ")[1] || ""}</span>
+                        </div>
+                    ) : (
+                        logo
+                    )}
                 </div>
 
                 {/* Navigation */}
@@ -217,20 +221,18 @@ export function EligifyHero({
                         className="flex flex-col items-center text-center max-w-4xl"
                         style={{ gap: "32px" }}
                     >
-                        {/* Logo Badge */}
+                        {/* Logo Badge -> Replaced with Logo */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.6, delay: 0.4 }}
-                            style={{
-                                fontFamily: "Inter, sans-serif",
-                                fontSize: "12px",
-                                fontWeight: 400,
-                                color: "#9CA3AF",
-                                letterSpacing: "0.1em",
-                            }}
+                            className="flex justify-center w-full mb-4"
                         >
-                            Eligify Platform
+                            <img
+                                src="/logo.png"
+                                alt="Eligify Logo"
+                                className="h-64 w-auto object-contain drop-shadow-[0_0_20px_rgba(6,182,212,0.6)]"
+                            />
                         </motion.div>
 
                         {/* Title */}

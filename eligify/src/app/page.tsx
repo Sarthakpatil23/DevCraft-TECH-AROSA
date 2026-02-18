@@ -1,5 +1,6 @@
 "use client";
 import { EligifyHero } from "@/components/ui/eligify-hero";
+import { EligifyLogo } from "@/components/ui/eligify-logo";
 import { StaggerTestimonials } from "@/components/ui/stagger-testimonials";
 import { SolutionsSection } from "@/components/ui/solutions-section";
 import { SchemesSection } from "@/components/ui/schemes-section";
@@ -10,7 +11,7 @@ export default function Home() {
   return (
     <main>
       <EligifyHero
-        logo="Eligify AI"
+        logo={null}
         navigation={[
           {
             label: "Home",
@@ -123,6 +124,6 @@ export default function Home() {
       <SchemesSection />
       <AboutSection />
       <StaggerTestimonials />
-    </main>
+    </main >
   );
 }

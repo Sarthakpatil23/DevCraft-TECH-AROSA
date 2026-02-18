@@ -29,4 +29,10 @@ urlpatterns = [
     re_path(r'^_next/(?P<path>.*)$', serve, {
         'document_root': os.path.join(settings.NEXTJS_BUILD_DIR, '_next'),
     }),
+    
+    # Catch-all for other static files (like logo.png, favicon.ico)
+    # WARNING: This should be last as it matches everything not matched above
+    re_path(r'^(?P<path>.*\..*)$', serve, {
+        'document_root': settings.NEXTJS_BUILD_DIR,
+    }),
 ]
