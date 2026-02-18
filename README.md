@@ -68,7 +68,7 @@ Follow these instructions to set up and run the project locally.
     # source venv/bin/activate
     
     # Install dependencies
-    pip install django djangorestframework django-cors-headers
+    pip install -r requirements.txt
     
     # Apply database migrations
     python manage.py migrate
