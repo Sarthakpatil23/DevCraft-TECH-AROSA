@@ -1,5 +1,7 @@
 "use client";
+import { ThemeToggle } from "@/components/theme-toggle";
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -26,6 +28,7 @@ import {
     Lock,
     FileText,
     ArrowUpRight,
+    FolderLock,
     Zap,
     Eye,
     Download,
@@ -44,6 +47,7 @@ const sidebarItems = [
     { icon: Upload, label: "Upload Scheme", id: "upload" },
     { icon: ClipboardList, label: "My Evaluations", id: "evaluations" },
     { icon: FileCheck, label: "Get Your Docs", id: "docs" },
+    { icon: FolderLock, label: "Document Vault", id: "vault" },
     { icon: BookOpen, label: "Resources", id: "resources" },
     { icon: Bell, label: "Notifications", id: "notifications" },
 ];
@@ -62,7 +66,7 @@ function ProfileRing({ percentage }: { percentage: number }) {
                     cy="60"
                     r={radius}
                     fill="none"
-                    stroke="rgba(255,255,255,0.06)"
+                    stroke="var(--surface-6)"
                     strokeWidth="8"
                 />
                 <motion.circle
@@ -87,14 +91,14 @@ function ProfileRing({ percentage }: { percentage: number }) {
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.span
-                    className="text-2xl font-bold text-white"
+                    className="text-2xl font-bold text-[var(--text-primary)]"
                     initial={{ opacity: 0, scale: 0.5 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8, duration: 0.4 }}
                 >
                     {percentage}%
                 </motion.span>
-                <span className="text-[10px] text-white/40 uppercase tracking-wider">
+                <span className="text-[10px] text-[var(--text-40)] uppercase tracking-wider">
                     Complete
                 </span>
             </div>
@@ -109,7 +113,7 @@ function NotifBadge({ count }: { count: number }) {
         <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[#0a0a0a]"
+            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[var(--bg-page)]"
         >
             {count}
         </motion.span>
@@ -136,10 +140,10 @@ function DashCard({
             transition={{ duration: 0.5, delay, ease: "easeOut" }}
             whileHover={{
                 y: -4,
-                borderColor: "rgba(255,255,255,0.15)",
+                borderColor: "var(--border-15)",
                 transition: { duration: 0.2 },
             }}
-            className={`bg-[#111111] border border-[#1a1a1a] rounded-2xl p-6 relative overflow-hidden group transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] ${className}`}
+            className={`bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl p-6 relative overflow-hidden group transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] ${className}`}
         >
             {/* subtle glow on hover */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -181,15 +185,15 @@ function SchemeItem({
     return (
         <motion.div
             whileHover={{ x: 4 }}
-            className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-transparent hover:border-white/[0.06] transition-all cursor-pointer group/item"
+            className="flex items-center justify-between p-4 rounded-xl bg-[var(--surface-2)] hover:bg-[var(--surface-5)] border border-transparent hover:border-[var(--border-6)] transition-all cursor-pointer group/item"
         >
             <div className="flex items-center gap-3 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-white/[0.04] flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5 text-white/50" />
+                <div className="w-10 h-10 rounded-lg bg-[var(--surface-4)] flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5 text-[var(--text-50)]" />
                 </div>
                 <div className="min-w-0">
-                    <p className="text-sm font-medium text-white truncate">{title}</p>
-                    <p className="text-xs text-white/30">{category}</p>
+                    <p className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</p>
+                    <p className="text-xs text-[var(--text-30)]">{category}</p>
                 </div>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
@@ -206,7 +210,7 @@ function SchemeItem({
                         {statusLabels[status]}
                     </span>
                 )}
-                <ArrowUpRight className="w-4 h-4 text-white/20 group-hover/item:text-white/60 transition-colors" />
+                <ArrowUpRight className="w-4 h-4 text-[var(--text-20)] group-hover/item:text-[var(--text-60)] transition-colors" />
             </div>
         </motion.div>
     );
@@ -229,16 +233,16 @@ function DocStep({
             <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold transition-colors ${done
                     ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "bg-white/[0.04] text-white/40 border border-white/[0.06]"
+                    : "bg-[var(--surface-4)] text-[var(--text-40)] border border-[var(--border-6)]"
                     }`}
             >
                 {done ? <CheckCircle2 className="w-4 h-4" /> : step}
             </div>
             <div>
-                <p className={`text-sm font-medium ${done ? "text-white/50 line-through" : "text-white"}`}>
+                <p className={`text-sm font-medium ${done ? "text-[var(--text-50)] line-through" : "text-[var(--text-primary)]"}`}>
                     {title}
                 </p>
-                <p className="text-xs text-white/30 mt-0.5">{desc}</p>
+                <p className="text-xs text-[var(--text-30)] mt-0.5">{desc}</p>
             </div>
         </div>
     );
@@ -259,7 +263,7 @@ function ResourceCard({
     return (
         <motion.div
             whileHover={{ scale: 1.02 }}
-            className="rounded-xl overflow-hidden bg-white/[0.02] border border-white/[0.04] hover:border-white/[0.1] transition-all cursor-pointer group/res"
+            className="rounded-xl overflow-hidden bg-[var(--surface-2)] border border-[var(--border-4)] hover:border-[var(--border-10)] transition-all cursor-pointer group/res"
         >
             <div
                 className="relative h-28 bg-cover bg-center"
@@ -269,24 +273,24 @@ function ResourceCard({
                 }}
             >
                 {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-card)] via-transparent to-transparent" />
                 {type === "video" && (
                     <div className="absolute inset-0 flex items-center justify-center">
                         <motion.div
                             whileHover={{ scale: 1.1 }}
                             className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover/res:bg-white/30 transition-colors"
                         >
-                            <Play className="w-4 h-4 text-white ml-0.5" />
+                            <Play className="w-4 h-4 text-[var(--text-primary)] ml-0.5" />
                         </motion.div>
                     </div>
                 )}
-                <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-white/70">
+                <span className="absolute top-2 right-2 text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-white/10 backdrop-blur-md text-[var(--text-70)]">
                     {type}
                 </span>
             </div>
             <div className="p-3">
-                <p className="text-sm font-medium text-white truncate">{title}</p>
-                <p className="text-xs text-white/30 mt-1 flex items-center gap-1">
+                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{title}</p>
+                <p className="text-xs text-[var(--text-30)] mt-1 flex items-center gap-1">
                     <Clock className="w-3 h-3" /> {duration}
                 </p>
             </div>
@@ -324,7 +328,7 @@ function NotifItem({
         <motion.div
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            className={`flex gap-3 p-4 rounded-xl transition-all cursor-pointer hover:bg-white/[0.03] ${unread ? "bg-white/[0.02] border border-white/[0.06]" : ""
+            className={`flex gap-3 p-4 rounded-xl transition-all cursor-pointer hover:bg-[var(--surface-3)] ${unread ? "bg-[var(--surface-2)] border border-[var(--border-6)]" : ""
                 }`}
         >
             <div
@@ -334,29 +338,21 @@ function NotifItem({
             </div>
             <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-2">
-                    <p className={`text-sm font-medium ${unread ? "text-white" : "text-white/60"}`}>
+                    <p className={`text-sm font-medium ${unread ? "text-[var(--text-primary)]" : "text-[var(--text-60)]"}`}>
                         {title}
                     </p>
                     {unread && (
                         <span className="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0 mt-1.5" />
                     )}
                 </div>
-                <p className="text-xs text-white/30 mt-0.5 line-clamp-2">{desc}</p>
-                <p className="text-[10px] text-white/20 mt-1">{time}</p>
+                <p className="text-xs text-[var(--text-30)] mt-0.5 line-clamp-2">{desc}</p>
+                <p className="text-[10px] text-[var(--text-20)] mt-1">{time}</p>
             </div>
         </motion.div>
     );
 }
 
 // ─── Mock Data ──────────────────────────────────────────────────────
-const profileCompletion = 80;
-const profileFields = [
-    { name: "Personal Details", done: true },
-    { name: "Address", done: true },
-    { name: "Education", done: true },
-    { name: "Income", done: false },
-    { name: "DigiLocker", done: true },
-];
 
 const recommendedSchemes = [
     { title: "PM Kisan Samman Nidhi", category: "Agriculture", match: 95 },
@@ -442,6 +438,17 @@ export default function Dashboard() {
     const [uploadedFile, setUploadedFile] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const hasFetched = useRef(false);
+
+    // ── Profile data from backend ─────────────────────────────────
+    const [userName, setUserName] = useState("");
+    const [profileCompletion, setProfileCompletion] = useState(0);
+    const [profileFields, setProfileFields] = useState([
+        { name: "Basic Info", done: false },
+        { name: "Education", done: false },
+        { name: "Social & Financial", done: false },
+        { name: "Family Details", done: false },
+    ]);
 
     useEffect(() => {
         // Check if tokens are passed via URL parameters (from OAuth callback)
@@ -458,6 +465,33 @@ export default function Dashboard() {
         const token = localStorage.getItem("access_token");
         if (!token) {
             router.push("/");
+            return;
+        }
+
+        // Fetch profile data from backend
+        if (!hasFetched.current) {
+            hasFetched.current = true;
+            axios.get("http://127.0.0.1:8000/api/auth/profile/", {
+                headers: { Authorization: `Bearer ${token}` },
+            }).then((res) => {
+                const user = res.data.user;
+                const completion = res.data.profile_completion;
+                setUserName(user.first_name || user.email || "");
+                setProfileCompletion(completion.total || 0);
+                setProfileFields([
+                    { name: "Basic Info", done: completion.basic_complete },
+                    { name: "Education", done: completion.education_complete },
+                    { name: "Social & Financial", done: completion.social_complete },
+                    { name: "Family Details", done: completion.family_complete },
+                ]);
+            }).catch((err) => {
+                console.error("Failed to fetch profile:", err);
+                if (err?.response?.status === 401) {
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
+                    router.push("/");
+                }
+            });
         }
     }, [router]);
 
@@ -484,6 +518,11 @@ export default function Dashboard() {
         }
         if (id === "docs") {
             router.push("/dashboard/docs");
+            setSidebarOpen(false);
+            return;
+        }
+        if (id === "vault") {
+            router.push("/dashboard/vault");
             setSidebarOpen(false);
             return;
         }
@@ -534,7 +573,7 @@ export default function Dashboard() {
     const unreadNotifs = notifications.filter((n) => n.unread).length;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+        <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex">
             {/* ═══ SIDEBAR ═══ */}
             {/* Mobile overlay */}
             <AnimatePresence>
@@ -544,13 +583,13 @@ export default function Dashboard() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                        className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden"
                     />
                 )}
             </AnimatePresence>
 
             <aside
-                className={`fixed top-0 left-0 h-screen w-[260px] bg-[#0e0e0e] border-r border-white/[0.06] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+                className={`fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
                     }`}
             >
                 {/* Logo */}
@@ -558,11 +597,11 @@ export default function Dashboard() {
                     <img
                         src="/logo.png"
                         alt="Eligify Logo"
-                        className="h-10 w-auto object-contain"
+                        className="h-20 w-auto object-contain logo-themed"
                     />
                     <button
                         onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden ml-auto text-white/40 hover:text-white transition-colors"
+                        className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -576,13 +615,13 @@ export default function Dashboard() {
                             DigiLocker Connected
                         </span>
                     </div>
-                    <p className="text-[10px] text-white/30 mt-1">
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">
                         Documents verified & secure
                     </p>
                 </div>
 
                 {/* Separator */}
-                <div className="mx-4 border-t border-white/[0.04] mb-2" />
+                <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
 
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -594,8 +633,8 @@ export default function Dashboard() {
                                 key={item.id}
                                 onClick={() => scrollToSection(item.id)}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative ${isActive
-                                    ? "bg-white/[0.08] text-white"
-                                    : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
+                                    ? "bg-[var(--surface-8)] text-[var(--text-primary)]"
+                                    : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]"
                                     }`}
                             >
                                 {isActive && (
@@ -613,7 +652,7 @@ export default function Dashboard() {
                                 </div>
                                 {item.label}
                                 {item.id === "profile" && (
-                                    <span className="ml-auto text-[10px] font-bold bg-white/[0.06] px-2 py-0.5 rounded-full text-white/50">
+                                    <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {profileCompletion}%
                                     </span>
                                 )}
@@ -623,7 +662,8 @@ export default function Dashboard() {
                 </nav>
 
                 {/* Logout */}
-                <div className="p-4 border-t border-white/[0.04]">
+                <div className="px-3 py-2"><ThemeToggle /></div>
+                <div className="p-4 border-t border-[var(--border-4)]">
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
@@ -640,24 +680,24 @@ export default function Dashboard() {
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.04] px-4 lg:px-8 py-4 flex items-center justify-between"
+                    className="sticky top-0 z-30 bg-[var(--bg-page)]/80 backdrop-blur-xl border-b border-[var(--border-4)] px-4 lg:px-8 py-4 flex items-center justify-between"
                 >
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden text-white/50 hover:text-white transition-colors"
+                            className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)] transition-colors"
                         >
                             <Menu className="w-6 h-6" />
                         </button>
                         {/* Search */}
                         <div className="relative hidden sm:block">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)]" />
                             <input
                                 type="text"
                                 placeholder="Search schemes, documents..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-[300px] lg:w-[380px] pl-10 pr-4 py-2.5 bg-white/[0.03] border border-white/[0.06] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/[0.15] focus:bg-white/[0.05] transition-all"
+                                className="w-[300px] lg:w-[380px] pl-10 pr-4 py-2.5 bg-[var(--surface-3)] border border-[var(--border-6)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-20)] focus:outline-none focus:border-[var(--border-15)] focus:bg-[var(--surface-5)] transition-all"
                             />
                         </div>
                     </div>
@@ -666,20 +706,20 @@ export default function Dashboard() {
                         {/* Notifications bell */}
                         <button
                             onClick={() => scrollToSection("notifications")}
-                            className="relative p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all"
+                            className="relative p-2.5 rounded-xl bg-[var(--surface-3)] border border-[var(--border-6)] hover:bg-[var(--surface-6)] transition-all"
                         >
-                            <Bell className="w-[18px] h-[18px] text-white/50" />
+                            <Bell className="w-[18px] h-[18px] text-[var(--text-50)]" />
                             <NotifBadge count={unreadNotifs} />
                         </button>
 
                         {/* User Avatar */}
-                        <div className="flex items-center gap-3 pl-3 border-l border-white/[0.06]">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-white/80 border border-white/[0.1]">
-                                R
+                        <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
+                                {userName ? userName.charAt(0).toUpperCase() : "?"}
                             </div>
                             <div className="hidden md:block">
-                                <p className="text-sm font-semibold text-white leading-none">
-                                    Rohit Sharma
+                                <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">
+                                    {userName || "Loading..."}
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
@@ -702,10 +742,10 @@ export default function Dashboard() {
                         transition={{ duration: 0.6 }}
                         className="relative z-10"
                     >
-                        <h1 className="text-3xl lg:text-4xl font-bold text-white">
-                            Welcome Back, Rohit! 👋
+                        <h1 className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)]">
+                            Welcome Back{userName ? `, ${userName.split(' ')[0]}` : ""}!
                         </h1>
-                        <p className="text-white/40 mt-2 text-base">
+                        <p className="text-[var(--text-40)] mt-2 text-base">
                             Discover schemes you&apos;re{" "}
                             <span className="text-emerald-400 font-semibold">eligible</span>{" "}
                             for
@@ -749,7 +789,7 @@ export default function Dashboard() {
                                 initial={{ opacity: 0, y: 16 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.1 + i * 0.08 }}
-                                className="bg-[#111111] border border-[#1a1a1a] rounded-2xl p-4 flex items-center gap-4 hover:border-white/[0.08] transition-all group"
+                                className="bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl p-4 flex items-center gap-4 hover:border-[var(--border-8)] transition-all group"
                             >
                                 <div
                                     className={`w-11 h-11 rounded-xl ${stat.bg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}
@@ -757,8 +797,8 @@ export default function Dashboard() {
                                     <stat.icon className={`w-5 h-5 ${stat.color}`} />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-white">{stat.value}</p>
-                                    <p className="text-[11px] text-white/30 leading-tight">
+                                    <p className="text-2xl font-bold text-[var(--text-primary)]">{stat.value}</p>
+                                    <p className="text-[11px] text-[var(--text-30)] leading-tight">
                                         {stat.label}
                                     </p>
                                 </div>
@@ -775,11 +815,11 @@ export default function Dashboard() {
                         <DashCard className="lg:col-span-2" delay={0.2}>
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <User className="w-5 h-5 text-white/40" />
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                        <User className="w-5 h-5 text-[var(--text-40)]" />
                                         Profile
                                     </h3>
-                                    <p className="text-xs text-white/30 mt-1">
+                                    <p className="text-xs text-[var(--text-30)] mt-1">
                                         Profile Completion
                                     </p>
                                 </div>
@@ -793,7 +833,7 @@ export default function Dashboard() {
                                         key={f.name}
                                         className="flex items-center justify-between py-1.5"
                                     >
-                                        <span className="text-sm text-white/50">{f.name}</span>
+                                        <span className="text-sm text-[var(--text-50)]">{f.name}</span>
                                         {f.done ? (
                                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                                         ) : (
@@ -822,11 +862,11 @@ export default function Dashboard() {
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <Search className="w-5 h-5 text-white/40" />
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                        <Search className="w-5 h-5 text-[var(--text-40)]" />
                                         Explore Schemes
                                     </h3>
-                                    <p className="text-xs text-white/30 mt-1">
+                                    <p className="text-xs text-[var(--text-30)] mt-1">
                                         Personalized recommendations based on your profile
                                     </p>
                                 </div>
@@ -846,7 +886,7 @@ export default function Dashboard() {
 
                             <button
                                 onClick={() => router.push("/dashboard/explore")}
-                                className="mt-4 w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-white text-sm font-medium transition-all flex items-center justify-center gap-2"
+                                className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2"
                             >
                                 View All Schemes
                                 <ExternalLink className="w-3.5 h-3.5" />
@@ -861,11 +901,11 @@ export default function Dashboard() {
                     >
                         {/* Upload Custom Scheme */}
                         <DashCard delay={0.35}>
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
-                                <Upload className="w-5 h-5 text-white/40" />
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-1">
+                                <Upload className="w-5 h-5 text-[var(--text-40)]" />
                                 Upload Custom Scheme
                             </h3>
-                            <p className="text-xs text-white/30 mb-4">
+                            <p className="text-xs text-[var(--text-30)] mb-4">
                                 Upload a scheme PDF to extract eligibility rules and check
                                 instantly
                             </p>
@@ -873,7 +913,7 @@ export default function Dashboard() {
                             {/* Simplified upload teaser */}
                             <div
                                 onClick={() => router.push("/dashboard/upload")}
-                                className="relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all border-white/[0.08] bg-white/[0.01] hover:border-white/[0.15] hover:bg-white/[0.02]"
+                                className="relative border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all border-[var(--border-8)] bg-[var(--surface-1)] hover:border-[var(--border-15)] hover:bg-[var(--surface-2)]"
                             >
                                 <motion.div
                                     animate={{ y: [0, -6, 0] }}
@@ -882,17 +922,17 @@ export default function Dashboard() {
                                         repeat: Infinity,
                                         ease: "easeInOut",
                                     }}
-                                    className="w-12 h-12 rounded-full bg-white/[0.04] flex items-center justify-center"
+                                    className="w-12 h-12 rounded-full bg-[var(--surface-4)] flex items-center justify-center"
                                 >
-                                    <Upload className="w-6 h-6 text-white/30" />
+                                    <Upload className="w-6 h-6 text-[var(--text-30)]" />
                                 </motion.div>
-                                <p className="text-sm text-white/50">
-                                    <span className="text-white font-medium">
+                                <p className="text-sm text-[var(--text-50)]">
+                                    <span className="text-[var(--text-primary)] font-medium">
                                         Click to upload
                                     </span>{" "}
                                     or drag and drop
                                 </p>
-                                <p className="text-[10px] text-white/20">
+                                <p className="text-[10px] text-[var(--text-20)]">
                                     PDF files only · Max 10MB
                                 </p>
                             </div>
@@ -910,15 +950,15 @@ export default function Dashboard() {
                         <DashCard delay={0.4} id="section-evaluations">
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <ClipboardList className="w-5 h-5 text-white/40" />
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                        <ClipboardList className="w-5 h-5 text-[var(--text-40)]" />
                                         My Evaluations
                                     </h3>
-                                    <p className="text-xs text-white/30 mt-1">
+                                    <p className="text-xs text-[var(--text-30)] mt-1">
                                         Previously checked schemes & eligibility results
                                     </p>
                                 </div>
-                                <div className="flex items-center gap-2 text-xs text-white/30">
+                                <div className="flex items-center gap-2 text-xs text-[var(--text-30)]">
                                     <RefreshCw className="w-3.5 h-3.5" />
                                     Updated recently
                                 </div>
@@ -930,7 +970,7 @@ export default function Dashboard() {
                                 ))}
                             </div>
 
-                            <button className="mt-4 w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-white text-sm font-medium transition-all flex items-center justify-center gap-2">
+                            <button className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2">
                                 View History
                                 <Clock className="w-3.5 h-3.5" />
                             </button>
@@ -944,11 +984,11 @@ export default function Dashboard() {
                     >
                         {/* Get Your Docs */}
                         <DashCard className="lg:col-span-2" delay={0.45}>
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2 mb-1">
-                                <FileCheck className="w-5 h-5 text-white/40" />
+                            <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-1">
+                                <FileCheck className="w-5 h-5 text-[var(--text-40)]" />
                                 Get Your Docs
                             </h3>
-                            <p className="text-xs text-white/30 mb-5">
+                            <p className="text-xs text-[var(--text-30)] mb-5">
                                 Step-by-step guidance to obtain required certificates
                             </p>
 
@@ -965,16 +1005,16 @@ export default function Dashboard() {
                             </div>
 
                             {/* Progress bar */}
-                            <div className="mt-5 pt-4 border-t border-white/[0.04]">
+                            <div className="mt-5 pt-4 border-t border-[var(--border-4)]">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="text-xs text-white/30">
+                                    <span className="text-xs text-[var(--text-30)]">
                                         Document Progress
                                     </span>
-                                    <span className="text-xs font-semibold text-white/50">
+                                    <span className="text-xs font-semibold text-[var(--text-50)]">
                                         2/4
                                     </span>
                                 </div>
-                                <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
+                                <div className="w-full h-1.5 bg-[var(--surface-4)] rounded-full overflow-hidden">
                                     <motion.div
                                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
                                         initial={{ width: 0 }}
@@ -993,11 +1033,11 @@ export default function Dashboard() {
                         >
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <BookOpen className="w-5 h-5 text-white/40" />
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                        <BookOpen className="w-5 h-5 text-[var(--text-40)]" />
                                         Resources
                                     </h3>
-                                    <p className="text-xs text-white/30 mt-1">
+                                    <p className="text-xs text-[var(--text-30)] mt-1">
                                         Videos & guides to help you apply for schemes
                                     </p>
                                 </div>
@@ -1009,7 +1049,7 @@ export default function Dashboard() {
                                 ))}
                             </div>
 
-                            <button className="mt-4 w-full py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] text-white text-sm font-medium transition-all flex items-center justify-center gap-2">
+                            <button className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2">
                                 Browse All Resources
                                 <BookOpen className="w-3.5 h-3.5" />
                             </button>
@@ -1021,8 +1061,8 @@ export default function Dashboard() {
                         <DashCard delay={0.55}>
                             <div className="flex items-center justify-between mb-4">
                                 <div>
-                                    <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                        <Bell className="w-5 h-5 text-white/40" />
+                                    <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
+                                        <Bell className="w-5 h-5 text-[var(--text-40)]" />
                                         Notifications
                                         {unreadNotifs > 0 && (
                                             <span className="ml-1 text-xs font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
@@ -1030,11 +1070,11 @@ export default function Dashboard() {
                                             </span>
                                         )}
                                     </h3>
-                                    <p className="text-xs text-white/30 mt-1">
+                                    <p className="text-xs text-[var(--text-30)] mt-1">
                                         Deadlines, new schemes, and important updates
                                     </p>
                                 </div>
-                                <button className="text-xs text-white/30 hover:text-white/60 transition-colors">
+                                <button className="text-xs text-[var(--text-30)] hover:text-[var(--text-60)] transition-colors">
                                     Mark all read
                                 </button>
                             </div>
@@ -1052,9 +1092,9 @@ export default function Dashboard() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 1 }}
-                        className="relative z-10 text-center py-8 border-t border-white/[0.04]"
+                        className="relative z-10 text-center py-8 border-t border-[var(--border-4)]"
                     >
-                        <p className="text-xs text-white/15">
+                        <p className="text-xs text-[var(--text-15)]">
                             © 2026 Eligify · AI-Powered Policy Decision Engine
                         </p>
                     </motion.div>

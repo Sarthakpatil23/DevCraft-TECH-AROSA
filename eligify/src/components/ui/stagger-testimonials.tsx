@@ -72,8 +72,8 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
             className={cn(
                 "absolute left-1/2 top-1/2 cursor-pointer border-2 p-8 transition-all duration-500 ease-in-out",
                 isCenter
-                    ? "z-10 bg-[#1a1a1a] text-white border-white/30"
-                    : "z-0 bg-[#111111] text-[#737373] border-[#1a1a1a] hover:border-white/20"
+                    ? "z-10 bg-[#1a1a1a] text-[var(--text-primary)] border-white/30"
+                    : "z-0 bg-[var(--bg-card)] text-[#737373] border-[#1a1a1a] hover:border-white/20"
             )}
             style={{
                 width: cardSize,
@@ -85,7 +85,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
           translateY(${isCenter ? -65 : position % 2 ? 15 : -15}px)
           rotate(${isCenter ? 0 : position % 2 ? 2.5 : -2.5}deg)
         `,
-                boxShadow: isCenter ? "0px 8px 0px 4px rgba(255, 255, 255, 0.1)" : "0px 0px 0px 0px transparent"
+                boxShadow: isCenter ? "0px 8px 0px 4px var(--border-10)" : "0px 0px 0px 0px transparent"
             }}
         >
             <span
@@ -108,13 +108,13 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({
             />
             <h3 className={cn(
                 "text-base sm:text-xl font-medium",
-                isCenter ? "text-[#FFFFFF]" : "text-white/80"
+                isCenter ? "text-[#FFFFFF]" : "text-[var(--text-80)]"
             )}>
                 "{testimonial.testimonial}"
             </h3>
             <p className={cn(
                 "absolute bottom-8 left-8 right-8 mt-2 text-sm italic",
-                isCenter ? "text-white/70" : "text-[#737373]"
+                isCenter ? "text-[var(--text-70)]" : "text-[#737373]"
             )}>
                 - {testimonial.by}
             </p>
@@ -158,14 +158,14 @@ export const StaggerTestimonials: React.FC = () => {
     return (
         <section
             id="testimonials"
-            className="relative w-full overflow-hidden bg-[#0a0a0a] py-12"
+            className="relative w-full overflow-hidden bg-[var(--bg-page)] py-12"
             style={{ height: 700 }}
         >
             <div className="absolute top-8 left-0 right-0 text-center z-10 pointer-events-none">
-                <h2 className="text-sm font-semibold text-white/60 tracking-widest uppercase mb-2">
+                <h2 className="text-sm font-semibold text-[var(--text-60)] tracking-widest uppercase mb-2">
                     Testimonials
                 </h2>
-                <h3 className="text-3xl font-bold text-white">
+                <h3 className="text-3xl font-bold text-[var(--text-primary)]">
                     What People Say
                 </h3>
             </div>
@@ -189,7 +189,7 @@ export const StaggerTestimonials: React.FC = () => {
                     onClick={() => handleMove(-1)}
                     className={cn(
                         "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-                        "bg-[#111111] border-2 border-[#1a1a1a] text-white hover:bg-[#1a1a1a] hover:text-white hover:border-white/30",
+                        "bg-[var(--bg-card)] border-2 border-[#1a1a1a] text-[var(--text-primary)] hover:bg-[#1a1a1a] hover:text-[var(--text-primary)] hover:border-white/30",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2"
                     )}
                     aria-label="Previous testimonial"
@@ -200,7 +200,7 @@ export const StaggerTestimonials: React.FC = () => {
                     onClick={() => handleMove(1)}
                     className={cn(
                         "flex h-14 w-14 items-center justify-center text-2xl transition-colors",
-                        "bg-[#111111] border-2 border-[#1a1a1a] text-white hover:bg-[#1a1a1a] hover:text-white hover:border-white/30",
+                        "bg-[var(--bg-card)] border-2 border-[#1a1a1a] text-[var(--text-primary)] hover:bg-[#1a1a1a] hover:text-[var(--text-primary)] hover:border-white/30",
                         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2"
                     )}
                     aria-label="Next testimonial"

@@ -1,13 +1,15 @@
 from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from django.contrib.auth import login
+from django.http import FileResponse
 from allauth.socialaccount.models import SocialAccount
-from .serializers import RegisterSerializer, UserSerializer, UserProfileUpdateSerializer
-from .models import UserProfile
+from .serializers import RegisterSerializer, UserSerializer, UserProfileUpdateSerializer, FullProfileUpdateSerializer, UserProfileSerializer, DocumentSerializer
+from .models import UserProfile, Document
 import requests
 import urllib.parse
 
@@ -96,7 +98,111 @@ class UserProfileUpdateView(generics.UpdateAPIView):
         return self.request.user.profile
 
 
-# Custom callback view for Google OAuth handled by Django
+class UserProfileDetailView(views.APIView):
+    """GET endpoint to retrieve the full profile with completion data."""
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        user = request.user
+        profile = user.profile
+        return Response({
+            'user': UserSerializer(user).data,
+            'profile_completion': profile.profile_completion,
+        })
+
+
+class FullProfileUpdateView(views.APIView):
+    """PATCH endpoint to update all profile sections at once."""
+    permission_classes = (IsAuthenticated,)
+
+    def patch(self, request):
+        profile = request.user.profile
+        serializer = FullProfileUpdateSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            # Refresh profile from DB to get updated completion
+            profile.refresh_from_db()
+            return Response({
+                'user': UserSerializer(request.user).data,
+                'profile_completion': profile.profile_completion,
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ═══ Document Vault Views ════════════════════════════════════════════
+class DocumentListCreateView(views.APIView):
+    """GET: list user's documents. POST: upload a new document."""
+    permission_classes = (IsAuthenticated,)
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request):
+        docs = Document.objects.filter(user=request.user)
+        category = request.query_params.get('category')
+        if category:
+            docs = docs.filter(category=category)
+        serializer = DocumentSerializer(docs, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = DocumentSerializer(data=request.data)
+        if serializer.is_valid():
+            uploaded_file = request.FILES.get('file')
+            if not uploaded_file:
+                return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save(
+                user=request.user,
+                file_size=uploaded_file.size,
+                file_type=uploaded_file.content_type or '',
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DocumentDetailView(views.APIView):
+    """GET/DELETE a specific document."""
+    permission_classes = (IsAuthenticated,)
+
+    def get_document(self, request, pk):
+        try:
+            return Document.objects.get(pk=pk, user=request.user)
+        except Document.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        doc = self.get_document(request, pk)
+        if not doc:
+            return Response({'error': 'Document not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(DocumentSerializer(doc).data)
+
+    def patch(self, request, pk):
+        doc = self.get_document(request, pk)
+        if not doc:
+            return Response({'error': 'Document not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = DocumentSerializer(doc, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        doc = self.get_document(request, pk)
+        if not doc:
+            return Response({'error': 'Document not found'}, status=status.HTTP_404_NOT_FOUND)
+        doc.file.delete(save=False)  # Delete file from storage
+        doc.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class DocumentDownloadView(views.APIView):
+    """Download a specific document file."""
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, pk):
+        try:
+            doc = Document.objects.get(pk=pk, user=request.user)
+        except Document.DoesNotExist:
+            return Response({'error': 'Document not found'}, status=status.HTTP_404_NOT_FOUND)
+        return FileResponse(doc.file.open(), as_attachment=True, filename=doc.name)
 def google_callback(request):
     """
     This view is called after successful Google OAuth.

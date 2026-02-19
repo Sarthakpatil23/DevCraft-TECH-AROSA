@@ -33,8 +33,10 @@ import {
     Star,
     AlertTriangle,
     ExternalLink,
+    FolderLock,
 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -47,11 +49,12 @@ const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
     { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
     { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard" },
+    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Scheme Types ───────────────────────────────────────────────────
@@ -226,7 +229,7 @@ function NotifBadge({ count }: { count: number }) {
         <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[#0a0a0a]"
+            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[var(--bg-page)]"
         >
             {count}
         </motion.span>
@@ -276,7 +279,7 @@ function MatchRing({ percent }: { percent: number }) {
     return (
         <div className="relative w-12 h-12 flex-shrink-0">
             <svg className="w-full h-full -rotate-90" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
+                <circle cx="22" cy="22" r={r} fill="none" stroke="var(--surface-6)" strokeWidth="3" />
                 <circle
                     cx="22"
                     cy="22"
@@ -289,7 +292,7 @@ function MatchRing({ percent }: { percent: number }) {
                     strokeDashoffset={offset}
                 />
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white">
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-[var(--text-primary)]">
                 {percent}%
             </span>
         </div>
@@ -316,7 +319,7 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
             transition={{ delay: index * 0.04, duration: 0.4 }}
             whileHover={{ y: -3, borderColor: "rgba(255,255,255,0.12)" }}
             onClick={() => router.push(`/dashboard/explore/${scheme.id}`)}
-            className="bg-[#111111] border border-[#1a1a1a] rounded-2xl p-5 cursor-pointer group transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] relative overflow-hidden"
+            className="bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl p-5 cursor-pointer group transition-all hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] relative overflow-hidden"
         >
             {/* Hover glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.015] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -325,10 +328,10 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
                 {/* Row 1: Title + Match Ring */}
                 <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-white group-hover:text-white truncate">
+                        <h3 className="text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--text-primary)] truncate">
                             {scheme.name}
                         </h3>
-                        <p className="text-[11px] text-white/25 mt-0.5">{scheme.ministry}</p>
+                        <p className="text-[11px] text-[var(--text-25)] mt-0.5">{scheme.ministry}</p>
                     </div>
                     <MatchRing percent={scheme.matchPercent} />
                 </div>
@@ -338,7 +341,7 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
                     {scheme.tags.map((tag) => (
                         <span
                             key={tag}
-                            className="px-2 py-0.5 rounded-full bg-white/[0.04] text-[10px] font-medium text-white/40 border border-white/[0.04]"
+                            className="px-2 py-0.5 rounded-full bg-[var(--surface-4)] text-[10px] font-medium text-[var(--text-40)] border border-[var(--border-4)]"
                         >
                             {tag}
                         </span>
@@ -347,15 +350,15 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
                 </div>
 
                 {/* Benefit Summary */}
-                <p className="text-xs text-white/35 leading-relaxed line-clamp-2 mb-3">
+                <p className="text-xs text-[var(--text-35)] leading-relaxed line-clamp-2 mb-3">
                     {scheme.benefitSummary}
                 </p>
 
                 {/* Bottom Row */}
-                <div className="flex items-center justify-between pt-3 border-t border-white/[0.04]">
+                <div className="flex items-center justify-between pt-3 border-t border-[var(--border-4)]">
                     <div className="flex items-center gap-3">
                         {/* Max Benefit */}
-                        <span className="flex items-center gap-1 text-[11px] text-white/30">
+                        <span className="flex items-center gap-1 text-[11px] text-[var(--text-30)]">
                             <IndianRupee className="w-3 h-3" />
                             {scheme.maxBenefit}
                         </span>
@@ -368,7 +371,7 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
                                         ? "text-red-400"
                                         : daysLeft <= 90
                                             ? "text-amber-400/70"
-                                            : "text-white/30"
+                                            : "text-[var(--text-30)]"
                                 )}
                             >
                                 <Calendar className="w-3 h-3" />
@@ -376,7 +379,7 @@ function SchemeCard({ scheme, index }: { scheme: Scheme; index: number }) {
                             </span>
                         )}
                     </div>
-                    <span className="flex items-center gap-1 text-xs font-medium text-white/40 group-hover:text-white/70 transition-colors">
+                    <span className="flex items-center gap-1 text-xs font-medium text-[var(--text-40)] group-hover:text-[var(--text-70)] transition-colors">
                         View Details
                         <ArrowUpRight className="w-3.5 h-3.5" />
                     </span>
@@ -454,7 +457,7 @@ export default function ExploreSchemesPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+        <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex">
             {/* ═══ SIDEBAR ═══ */}
             <AnimatePresence>
                 {sidebarOpen && (
@@ -463,22 +466,22 @@ export default function ExploreSchemesPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                        className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden"
                     />
                 )}
             </AnimatePresence>
 
             <aside
                 className={cn(
-                    "fixed top-0 left-0 h-screen w-[260px] bg-[#0e0e0e] border-r border-white/[0.06] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0",
+                    "fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
                 <div className="p-6 pb-4 flex items-center gap-3">
-                    <img src="/logo.png" alt="Eligify Logo" className="h-10 w-auto object-contain" />
+                    <img src="/logo.png" alt="Eligify Logo" className="h-20 w-auto object-contain logo-themed" />
                     <button
                         onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden ml-auto text-white/40 hover:text-white transition-colors"
+                        className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -489,10 +492,10 @@ export default function ExploreSchemesPage() {
                         <Shield className="w-4 h-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span>
                     </div>
-                    <p className="text-[10px] text-white/30 mt-1">Documents verified & secure</p>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
                 </div>
 
-                <div className="mx-4 border-t border-white/[0.04] mb-2" />
+                <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
 
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
                     {sidebarItems.map((item) => {
@@ -505,8 +508,8 @@ export default function ExploreSchemesPage() {
                                 className={cn(
                                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative",
                                     isActive
-                                        ? "bg-white/[0.08] text-white"
-                                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
+                                        ? "bg-[var(--surface-8)] text-[var(--text-primary)]"
+                                        : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]"
                                 )}
                             >
                                 {isActive && (
@@ -522,7 +525,7 @@ export default function ExploreSchemesPage() {
                                 </div>
                                 {item.label}
                                 {item.id === "profile" && (
-                                    <span className="ml-auto text-[10px] font-bold bg-white/[0.06] px-2 py-0.5 rounded-full text-white/50">
+                                    <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {profileCompletion}%
                                     </span>
                                 )}
@@ -531,7 +534,8 @@ export default function ExploreSchemesPage() {
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-white/[0.04]">
+                <div className="px-3 py-2"><ThemeToggle /></div>
+        <div className="p-4 border-t border-[var(--border-4)]">
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
@@ -548,24 +552,24 @@ export default function ExploreSchemesPage() {
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.04] px-4 lg:px-8 py-4 flex items-center justify-between"
+                    className="sticky top-0 z-30 bg-[var(--bg-page)]/80 backdrop-blur-xl border-b border-[var(--border-4)] px-4 lg:px-8 py-4 flex items-center justify-between"
                 >
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden text-white/50 hover:text-white transition-colors"
+                            className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)] transition-colors"
                         >
                             <Menu className="w-6 h-6" />
                         </button>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => router.push("/dashboard")}
-                                className="text-white/30 hover:text-white/60 text-sm transition-colors"
+                                className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm transition-colors"
                             >
                                 Dashboard
                             </button>
-                            <ChevronRight className="w-3.5 h-3.5 text-white/15" />
-                            <span className="text-sm text-white font-medium">Explore Schemes</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
+                            <span className="text-sm text-[var(--text-primary)] font-medium">Explore Schemes</span>
                         </div>
                     </div>
 
@@ -574,17 +578,17 @@ export default function ExploreSchemesPage() {
                             variant="outline"
                             size="sm"
                             onClick={() => router.push("/dashboard")}
-                            className="border-white/[0.08] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06] text-xs"
+                            className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs"
                         >
                             <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
                             Dashboard
                         </Button>
-                        <div className="flex items-center gap-3 pl-3 border-l border-white/[0.06]">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-white/80 border border-white/[0.1]">
+                        <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
                                 R
                             </div>
                             <div className="hidden md:block">
-                                <p className="text-sm font-semibold text-white leading-none">Rohit Sharma</p>
+                                <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">Rohit Sharma</p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
                                 </p>
@@ -606,11 +610,11 @@ export default function ExploreSchemesPage() {
                     >
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div>
-                                <h1 className="text-2xl lg:text-3xl font-bold text-white flex items-center gap-3">
-                                    <Search className="w-7 h-7 text-white/30" />
+                                <h1 className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+                                    <Search className="w-7 h-7 text-[var(--text-30)]" />
                                     Explore Schemes
                                 </h1>
-                                <p className="text-sm text-white/35 mt-1">
+                                <p className="text-sm text-[var(--text-35)] mt-1">
                                     Personalized recommendations based on your profile
                                 </p>
                             </div>
@@ -623,7 +627,7 @@ export default function ExploreSchemesPage() {
                                     <AlertCircle className="w-3 h-3" />
                                     {partialCount} Partial
                                 </Badge>
-                                <Badge className="bg-white/[0.06] text-white/50 border-white/[0.06] gap-1">
+                                <Badge className="bg-[var(--surface-6)] text-[var(--text-50)] border-[var(--border-6)] gap-1">
                                     Profile {profileCompletion}%
                                 </Badge>
                             </div>
@@ -664,17 +668,17 @@ export default function ExploreSchemesPage() {
                     >
                         {/* Search */}
                         <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)]" />
                             <Input
                                 placeholder="Search schemes by name, category, ministry..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 h-12 bg-[#111111] border-[#1a1a1a] text-white placeholder:text-white/20 focus-visible:border-white/[0.15] rounded-xl text-sm"
+                                className="w-full pl-11 pr-4 py-3 h-12 bg-[var(--bg-card)] border-[#1a1a1a] text-[var(--text-primary)] placeholder:text-[var(--text-20)] focus-visible:border-[var(--border-15)] rounded-xl text-sm"
                             />
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery("")}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition-colors"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-20)] hover:text-[var(--text-50)] transition-colors"
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -683,12 +687,12 @@ export default function ExploreSchemesPage() {
 
                         {/* Tabs */}
                         <Tabs value={activeTab} onValueChange={setActiveTab}>
-                            <TabsList className="bg-[#111111] border border-[#1a1a1a] p-1 h-auto rounded-xl flex-wrap gap-1">
+                            <TabsList className="bg-[var(--bg-card)] border border-[#1a1a1a] p-1 h-auto rounded-xl flex-wrap gap-1">
                                 {TAB_CONFIG.map((tab) => (
                                     <TabsTrigger
                                         key={tab.value}
                                         value={tab.value}
-                                        className="data-[state=active]:bg-white/[0.08] data-[state=active]:text-white text-white/40 rounded-lg px-3 py-2 text-xs font-medium gap-1.5 transition-all"
+                                        className="data-[state=active]:bg-[var(--surface-8)] data-[state=active]:text-[var(--text-primary)] text-[var(--text-40)] rounded-lg px-3 py-2 text-xs font-medium gap-1.5 transition-all"
                                     >
                                         <tab.icon className="w-3.5 h-3.5" />
                                         {tab.label}
@@ -700,17 +704,17 @@ export default function ExploreSchemesPage() {
 
                     {/* ── Results Count ── */}
                     <div className="flex items-center justify-between mb-4 relative z-10">
-                        <p className="text-xs text-white/25">
+                        <p className="text-xs text-[var(--text-25)]">
                             Showing{" "}
-                            <span className="text-white/50 font-medium">{filteredSchemes.length}</span>{" "}
+                            <span className="text-[var(--text-50)] font-medium">{filteredSchemes.length}</span>{" "}
                             scheme{filteredSchemes.length !== 1 ? "s" : ""}
                             {searchQuery && (
                                 <span>
-                                    {" "}for &quot;<span className="text-white/50">{searchQuery}</span>&quot;
+                                    {" "}for &quot;<span className="text-[var(--text-50)]">{searchQuery}</span>&quot;
                                 </span>
                             )}
                         </p>
-                        <span className="text-[10px] text-white/20 flex items-center gap-1">
+                        <span className="text-[10px] text-[var(--text-20)] flex items-center gap-1">
                             <TrendingUp className="w-3 h-3" />
                             Sorted by match % & deadline
                         </span>
@@ -732,8 +736,8 @@ export default function ExploreSchemesPage() {
                             animate={{ opacity: 1 }}
                             className="text-center py-20"
                         >
-                            <Search className="w-12 h-12 text-white/10 mx-auto mb-4" />
-                            <p className="text-white/30 text-sm">No schemes found matching your criteria.</p>
+                            <Search className="w-12 h-12 text-[var(--text-10)] mx-auto mb-4" />
+                            <p className="text-[var(--text-30)] text-sm">No schemes found matching your criteria.</p>
                             <Button
                                 variant="outline"
                                 size="sm"
@@ -741,7 +745,7 @@ export default function ExploreSchemesPage() {
                                     setSearchQuery("");
                                     setActiveTab("recommended");
                                 }}
-                                className="mt-4 border-white/[0.08] text-white/50"
+                                className="mt-4 border-[var(--border-8)] text-[var(--text-50)]"
                             >
                                 Clear Filters
                             </Button>
@@ -753,9 +757,9 @@ export default function ExploreSchemesPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.8 }}
-                        className="text-center py-10 border-t border-white/[0.04] mt-10 relative z-10"
+                        className="text-center py-10 border-t border-[var(--border-4)] mt-10 relative z-10"
                     >
-                        <p className="text-xs text-white/15">
+                        <p className="text-xs text-[var(--text-15)]">
                             © 2026 Eligify · AI-Powered Policy Decision Engine
                         </p>
                     </motion.div>

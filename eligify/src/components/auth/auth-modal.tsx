@@ -70,16 +70,16 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
                 className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
             >
-                <div className="bg-[#111111] border border-[#1a1a1a] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
+                <div className="bg-[var(--bg-card)] border border-[#1a1a1a] w-full max-w-md p-8 rounded-2xl shadow-2xl relative pointer-events-auto">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-[#737373] hover:text-white transition-colors"
+                        className="absolute top-4 right-4 text-[#737373] hover:text-[var(--text-primary)] transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
 
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-white mb-2">
+                        <h2 className="text-2xl font-bold text-[var(--text-primary)] mb-2">
                             {mode === "login" ? "Welcome to Eligify" : "Create an Account"}
                         </h2>
                         <p className="text-[#737373] text-sm">
@@ -103,7 +103,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                         <div className="absolute inset-0 flex items-center">
                             <div className="w-full border-t border-[#1a1a1a]"></div>
                         </div>
-                        <span className="relative bg-[#111111] px-4 text-xs text-[#525252] uppercase">
+                        <span className="relative bg-[var(--bg-card)] px-4 text-xs text-[#525252] uppercase">
                             Or continue with email
                         </span>
                     </div>
@@ -115,7 +115,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                 <input
                                     type="email"
                                     placeholder="Email address"
-                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                     required
                                 />
                             </div>
@@ -127,7 +127,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                 <input
                                     type="password"
                                     placeholder="Password"
-                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
+                                    className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                     required
                                 />
                             </div>
@@ -140,7 +140,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                     <input
                                         type="password"
                                         placeholder="Confirm Password"
-                                        className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
+                                        className="w-full pl-10 pr-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-white/30 placeholder:text-[#525252]"
                                         required
                                     />
                                 </div>
@@ -162,7 +162,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                 New here?{" "}
                                 <button
                                     onClick={() => setMode("signup")}
-                                    className="text-white hover:underline transition-colors"
+                                    className="text-[var(--text-primary)] hover:underline transition-colors"
                                 >
                                     Sign up
                                 </button>
@@ -172,7 +172,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                                 Already have an account?{" "}
                                 <button
                                     onClick={() => setMode("login")}
-                                    className="text-white hover:underline transition-colors"
+                                    className="text-[var(--text-primary)] hover:underline transition-colors"
                                 >
                                     Log in
                                 </button>

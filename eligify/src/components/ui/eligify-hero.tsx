@@ -59,7 +59,7 @@ export function EligifyHero({
     return (
         <section
             className={cn(
-                "relative w-full min-h-screen flex flex-col overflow-hidden bg-[#0a0a0a]",
+                "relative w-full min-h-screen flex flex-col overflow-hidden bg-[var(--bg-page)]",
                 className
             )}
             role="banner"
@@ -78,7 +78,7 @@ export function EligifyHero({
                         left: "50%",
                         top: "50%",
                         transform: "translate(-50%, -50%)",
-                        background: "radial-gradient(circle, rgba(255, 255, 255, 0.03) 0%, transparent 70%)",
+                        background: "radial-gradient(circle, var(--surface-3) 0%, transparent 70%)",
                         filter: "blur(60px)",
                     }}
                 />
@@ -103,7 +103,7 @@ export function EligifyHero({
                                 fontFamily: "Inter, sans-serif",
                                 fontWeight: 700,
                                 fontSize: "20px",
-                                color: "#ffffff",
+                                color: "var(--text-primary)",
                             }}
                         >
                             <span style={{ fontWeight: 400 }}>{logo.split(" ")[0]}</span>
@@ -125,7 +125,7 @@ export function EligifyHero({
                                 fontFamily: "Inter, sans-serif",
                                 fontSize: "15px",
                                 fontWeight: 400,
-                                color: "#a1a1a1",
+                                color: "var(--text-40)",
                             }}
                         >
                             {item.label}
@@ -137,14 +137,14 @@ export function EligifyHero({
                 {contactButton && (
                     <button
                         onClick={contactButton.onClick}
-                        className="px-6 py-2.5 rounded-full transition-all hover:scale-105 hover:bg-white hover:text-black"
+                        className="px-6 py-2.5 rounded-full transition-all hover:scale-105 hover:bg-[var(--text-primary)] hover:text-[var(--bg-page)]"
                         style={{
                             background: "transparent",
-                            border: "1px solid rgba(255, 255, 255, 0.2)",
+                            border: "1px solid var(--border-20)",
                             fontFamily: "Inter, sans-serif",
                             fontSize: "15px",
                             fontWeight: 400,
-                            color: "#e5e5e5",
+                            color: "var(--text-80)",
                         }}
                     >
                         {contactButton.label}
@@ -189,13 +189,13 @@ export function EligifyHero({
                                     width: "80px",
                                     height: "80px",
                                     borderRadius: "50%",
-                                    background: "rgba(255, 255, 255, 0.03)",
+                                    background: "var(--surface-3)",
                                     backdropFilter: "blur(10px)",
-                                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                                    border: "1px solid var(--border-10)",
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
-                                    boxShadow: "0 0 30px rgba(255, 255, 255, 0.05)",
+                                    boxShadow: "0 0 30px var(--surface-5)",
                                 }}
                             >
                                 {feature.icon}
@@ -205,7 +205,7 @@ export function EligifyHero({
                                     fontFamily: "Inter, sans-serif",
                                     fontSize: "12px",
                                     fontWeight: 600,
-                                    color: "#a1a1a1",
+                                    color: "var(--text-40)",
                                     textTransform: "uppercase",
                                 }}
                             >
@@ -231,7 +231,7 @@ export function EligifyHero({
                             <img
                                 src="/logo.png"
                                 alt="Eligify Logo"
-                                className="h-64 w-auto object-contain drop-shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                                className="h-64 w-auto object-contain drop-shadow-[0_0_20px_var(--border-15)] logo-themed"
                             />
                         </motion.div>
 
@@ -242,7 +242,7 @@ export function EligifyHero({
                                 fontWeight: 500,
                                 fontSize: "clamp(32px, 5vw, 64px)",
                                 lineHeight: "1.2",
-                                color: "#ffffff",
+                                color: "var(--text-primary)",
                                 letterSpacing: "-0.02em",
                             }}
                         >
@@ -250,7 +250,7 @@ export function EligifyHero({
                             <br />
                             <span
                                 style={{
-                                    background: "linear-gradient(90deg, #ffffff 0%, #a1a1a1 50%, #ffffff 100%)",
+                                    background: "linear-gradient(90deg, var(--text-primary) 0%, var(--text-40) 50%, var(--text-primary) 100%)",
                                     WebkitBackgroundClip: "text",
                                     WebkitTextFillColor: "transparent",
                                     backgroundClip: "text",
@@ -268,7 +268,7 @@ export function EligifyHero({
                                 fontWeight: 400,
                                 fontSize: "clamp(14px, 2vw, 16px)",
                                 lineHeight: "1.6",
-                                color: "#737373",
+                                color: "var(--text-50)",
                                 maxWidth: "600px",
                             }}
                         >
@@ -283,14 +283,14 @@ export function EligifyHero({
                                 transition={{ duration: 0.6, delay: 0.6 }}
                                 whileHover={{ scale: 1.05 }}
                                 onClick={ctaButton.onClick}
-                                className="px-8 py-3 rounded-md transition-all hover:bg-white hover:text-black"
+                                className="px-8 py-3 rounded-md transition-all hover:bg-[var(--text-primary)] hover:text-[var(--bg-page)]"
                                 style={{
                                     background: "transparent",
-                                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                                    border: "1px solid var(--border-20)",
                                     fontFamily: "Inter, sans-serif",
                                     fontSize: "15px",
                                     fontWeight: 500,
-                                    color: "#e5e5e5",
+                                    color: "var(--text-80)",
                                 }}
                             >
                                 {ctaButton.label}
@@ -319,7 +319,7 @@ export function EligifyHero({
                                 fontFamily: "Inter, sans-serif",
                                 fontSize: "12px",
                                 fontWeight: 400,
-                                color: "#525252",
+                                color: "var(--text-35)",
                                 letterSpacing: "0.1em",
                                 textTransform: "uppercase",
                             }}

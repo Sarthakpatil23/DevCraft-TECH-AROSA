@@ -12,7 +12,7 @@ export const EligifyLogo = ({ className, imgClassName }: EligifyLogoProps) => (
         <img
             src="/logo.png"
             alt="Eligify Logo"
-            className={cn("h-[60px] w-auto object-contain hover:scale-105 transition-transform duration-300", imgClassName)}
+            className={cn("h-[60px] w-auto object-contain hover:scale-105 transition-transform duration-300 logo-themed", imgClassName)}
         />
     </div>
 );

@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
+import React, { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -31,8 +32,10 @@ import {
     Info,
     Sparkles,
     Save,
+    FolderLock,
 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -85,12 +88,13 @@ const RELATIONS = [
 const sidebarItems = [
     { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
     { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard" },
+    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -133,7 +137,7 @@ function NotifBadge({ count }: { count: number }) {
         <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[#0a0a0a]"
+            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center ring-2 ring-[var(--bg-page)]"
         >
             {count}
         </motion.span>
@@ -166,23 +170,23 @@ function SectionCard({
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay, ease: "easeOut" }}
-            className="bg-[#111111] border border-[#1a1a1a] rounded-2xl overflow-hidden group transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
+            className="bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl overflow-hidden group transition-shadow hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
         >
             {/* Section Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.04]">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[var(--border-4)]">
                 <div className="flex items-center gap-3">
                     <div
                         className={cn(
                             "w-10 h-10 rounded-xl flex items-center justify-center transition-colors",
                             sectionComplete
                                 ? "bg-emerald-400/10 text-emerald-400"
-                                : "bg-white/[0.04] text-white/40"
+                                : "bg-[var(--surface-4)] text-[var(--text-40)]"
                         )}
                     >
                         <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                        <h3 className="text-base font-semibold text-white flex items-center gap-2">
+                        <h3 className="text-base font-semibold text-[var(--text-primary)] flex items-center gap-2">
                             {title}
                             {sectionComplete && (
                                 <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[10px] px-1.5 py-0">
@@ -191,10 +195,10 @@ function SectionCard({
                                 </Badge>
                             )}
                         </h3>
-                        <p className="text-xs text-white/30 mt-0.5">{subtitle}</p>
+                        <p className="text-xs text-[var(--text-30)] mt-0.5">{subtitle}</p>
                     </div>
                 </div>
-                <span className="text-[10px] font-semibold text-white/20 bg-white/[0.03] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                <span className="text-[10px] font-semibold text-[var(--text-20)] bg-[var(--surface-3)] px-2.5 py-1 rounded-full uppercase tracking-wider">
                     {sectionWeight}
                 </span>
             </div>
@@ -238,38 +242,77 @@ export default function ProfilePage() {
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [digiLockerConnected, setDigiLockerConnected] = useState(true);
+    const hasFetched = useRef(false);
 
     // ── Profile State ─────────────────────────────────────────────────
     const [profile, setProfile] = useState<ProfileData>({
-        fullName: "Rohit Sharma",
-        email: "rohit.sharma@gmail.com",
-        state: "Maharashtra",
-        gender: "Male",
-        dob: "1999-06-15",
-        occupation: "Student",
-        educationLevel: "Undergraduate",
-        marksPercentage: "82",
-        category: "OBC",
+        fullName: "",
+        email: "",
+        state: "",
+        gender: "",
+        dob: "",
+        occupation: "",
+        educationLevel: "",
+        marksPercentage: "",
+        category: "",
         minorityStatus: false,
         disabilityStatus: false,
-        areaType: "Urban",
-        annualIncome: "₹2.5 – 5 Lakh",
-        familyMembers: [
-            {
-                id: "1",
-                relation: "Father",
-                occupation: "Private Employee",
-                income: "₹5 – 8 Lakh",
-                landOwnership: false,
-            },
-        ],
+        areaType: "",
+        annualIncome: "",
+        familyMembers: [],
     });
 
-    // ── Auth check ────────────────────────────────────────────────────
+    // ── Auth check & fetch profile from backend ───────────────────────
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        if (hasFetched.current) return;
+        hasFetched.current = true;
+
+        const fetchProfile = async () => {
+            try {
+                const res = await axios.get("http://127.0.0.1:8000/api/auth/profile/", {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                const user = res.data.user;
+                const p = user.profile;
+                setProfile({
+                    fullName: user.first_name || "",
+                    email: user.email || "",
+                    state: p.state || "",
+                    gender: p.gender || "",
+                    dob: p.dob || "",
+                    occupation: p.occupation || "",
+                    educationLevel: p.education_level || "",
+                    marksPercentage: p.marks_percentage || "",
+                    category: p.category || "",
+                    minorityStatus: p.minority_status || false,
+                    disabilityStatus: p.disability_status || false,
+                    areaType: p.area_type || "",
+                    annualIncome: p.annual_income || "",
+                    familyMembers: (p.family_members || []).map((m: any, i: number) => ({
+                        id: m.id || String(i + 1),
+                        relation: m.relation || "",
+                        occupation: m.occupation || "",
+                        income: m.income || "",
+                        landOwnership: m.landOwnership || false,
+                    })),
+                });
+            } catch (err: any) {
+                if (err?.response?.status === 401) {
+                    localStorage.removeItem("access_token");
+                    localStorage.removeItem("refresh_token");
+                    router.push("/");
+                }
+                console.error("Failed to fetch profile:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
     }, [router]);
 
     // ── Updater helpers ───────────────────────────────────────────────
@@ -370,9 +413,43 @@ export default function ProfilePage() {
     // ── Save handler ──────────────────────────────────────────────────
     const handleSave = async () => {
         setSaving(true);
-        // Simulated API call
-        await new Promise((r) => setTimeout(r, 1500));
-        setSaving(false);
+        setSaveMessage(null);
+        try {
+            const token = localStorage.getItem("access_token");
+            const res = await axios.patch(
+                "http://127.0.0.1:8000/api/auth/profile/full-update/",
+                {
+                    first_name: profile.fullName,
+                    state: profile.state || null,
+                    gender: profile.gender || null,
+                    dob: profile.dob || null,
+                    occupation: profile.occupation || null,
+                    education_level: profile.educationLevel || null,
+                    marks_percentage: profile.marksPercentage || null,
+                    category: profile.category || null,
+                    minority_status: profile.minorityStatus,
+                    disability_status: profile.disabilityStatus,
+                    area_type: profile.areaType || null,
+                    annual_income: profile.annualIncome || null,
+                    family_members: profile.familyMembers.map((m) => ({
+                        id: m.id,
+                        relation: m.relation,
+                        occupation: m.occupation,
+                        income: m.income,
+                        landOwnership: m.landOwnership,
+                    })),
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            setSaveMessage({ type: "success", text: "Profile updated successfully!" });
+            setTimeout(() => setSaveMessage(null), 3000);
+        } catch (err: any) {
+            console.error("Failed to save profile:", err);
+            setSaveMessage({ type: "error", text: "Failed to save. Please try again." });
+            setTimeout(() => setSaveMessage(null), 4000);
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleLogout = () => {
@@ -382,7 +459,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white flex">
+        <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex">
             {/* ═══ SIDEBAR ═══ */}
             <AnimatePresence>
                 {sidebarOpen && (
@@ -391,14 +468,14 @@ export default function ProfilePage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+                        className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden"
                     />
                 )}
             </AnimatePresence>
 
             <aside
                 className={cn(
-                    "fixed top-0 left-0 h-screen w-[260px] bg-[#0e0e0e] border-r border-white/[0.06] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0",
+                    "fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0",
                     sidebarOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
@@ -407,11 +484,11 @@ export default function ProfilePage() {
                     <img
                         src="/logo.png"
                         alt="Eligify Logo"
-                        className="h-10 w-auto object-contain"
+                        className="h-20 w-auto object-contain logo-themed"
                     />
                     <button
                         onClick={() => setSidebarOpen(false)}
-                        className="lg:hidden ml-auto text-white/40 hover:text-white transition-colors"
+                        className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"
                     >
                         <X className="w-5 h-5" />
                     </button>
@@ -425,12 +502,12 @@ export default function ProfilePage() {
                             DigiLocker Connected
                         </span>
                     </div>
-                    <p className="text-[10px] text-white/30 mt-1">
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">
                         Documents verified & secure
                     </p>
                 </div>
 
-                <div className="mx-4 border-t border-white/[0.04] mb-2" />
+                <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
 
                 {/* Navigation */}
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -447,8 +524,8 @@ export default function ProfilePage() {
                                 className={cn(
                                     "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative",
                                     isActive
-                                        ? "bg-white/[0.08] text-white"
-                                        : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
+                                        ? "bg-[var(--surface-8)] text-[var(--text-primary)]"
+                                        : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]"
                                 )}
                             >
                                 {isActive && (
@@ -464,7 +541,7 @@ export default function ProfilePage() {
                                 </div>
                                 {item.label}
                                 {item.id === "profile" && (
-                                    <span className="ml-auto text-[10px] font-bold bg-white/[0.06] px-2 py-0.5 rounded-full text-white/50">
+                                    <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {completion.total}%
                                     </span>
                                 )}
@@ -474,7 +551,8 @@ export default function ProfilePage() {
                 </nav>
 
                 {/* Logout */}
-                <div className="p-4 border-t border-white/[0.04]">
+                <div className="px-3 py-2"><ThemeToggle /></div>
+        <div className="p-4 border-t border-[var(--border-4)]">
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
@@ -491,24 +569,24 @@ export default function ProfilePage() {
                 <motion.header
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="sticky top-0 z-30 bg-[#0a0a0a]/80 backdrop-blur-xl border-b border-white/[0.04] px-4 lg:px-8 py-4 flex items-center justify-between"
+                    className="sticky top-0 z-30 bg-[var(--bg-page)]/80 backdrop-blur-xl border-b border-[var(--border-4)] px-4 lg:px-8 py-4 flex items-center justify-between"
                 >
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => setSidebarOpen(true)}
-                            className="lg:hidden text-white/50 hover:text-white transition-colors"
+                            className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)] transition-colors"
                         >
                             <Menu className="w-6 h-6" />
                         </button>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => router.push("/dashboard")}
-                                className="text-white/30 hover:text-white/60 text-sm transition-colors"
+                                className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm transition-colors"
                             >
                                 Dashboard
                             </button>
-                            <ChevronRight className="w-3.5 h-3.5 text-white/15" />
-                            <span className="text-sm text-white font-medium">Profile</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
+                            <span className="text-sm text-[var(--text-primary)] font-medium">Profile</span>
                         </div>
                     </div>
 
@@ -517,19 +595,19 @@ export default function ProfilePage() {
                             variant="outline"
                             size="sm"
                             onClick={() => router.push("/dashboard")}
-                            className="border-white/[0.08] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06] text-xs"
+                            className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs"
                         >
                             <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
                             Back to Dashboard
                         </Button>
 
-                        <div className="flex items-center gap-3 pl-3 border-l border-white/[0.06]">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-white/80 border border-white/[0.1]">
-                                R
+                        <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
+                                {profile.fullName ? profile.fullName.charAt(0).toUpperCase() : "?"}
                             </div>
                             <div className="hidden md:block">
-                                <p className="text-sm font-semibold text-white leading-none">
-                                    Rohit Sharma
+                                <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">
+                                    {profile.fullName || "Loading..."}
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
@@ -550,7 +628,7 @@ export default function ProfilePage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="bg-[#111111] border border-[#1a1a1a] rounded-2xl overflow-hidden relative z-10"
+                        className="bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl overflow-hidden relative z-10"
                     >
                         {/* Subtle gradient accent at top */}
                         <div className="h-[2px] bg-gradient-to-r from-emerald-500/50 via-teal-400/50 to-blue-500/50" />
@@ -558,11 +636,11 @@ export default function ProfilePage() {
                         <div className="p-6">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                                 <div>
-                                    <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-                                        <User className="w-6 h-6 text-white/40" />
+                                    <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
+                                        <User className="w-6 h-6 text-[var(--text-40)]" />
                                         Your Profile
                                     </h1>
-                                    <p className="text-sm text-white/30 mt-1">
+                                    <p className="text-sm text-[var(--text-30)] mt-1">
                                         Keep your profile complete for accurate recommendations
                                     </p>
                                 </div>
@@ -606,16 +684,16 @@ export default function ProfilePage() {
                             {/* Main Progress */}
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium text-white/60">
+                                    <span className="text-sm font-medium text-[var(--text-60)]">
                                         Profile Completion
                                     </span>
-                                    <span className="text-2xl font-bold text-white">
+                                    <span className="text-2xl font-bold text-[var(--text-primary)]">
                                         {completion.total}%
                                     </span>
                                 </div>
                                 <Progress
                                     value={completion.total}
-                                    className="h-3 bg-white/[0.04] [&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-emerald-500 [&>[data-slot=progress-indicator]]:to-teal-400 [&>[data-slot=progress-indicator]]:transition-all [&>[data-slot=progress-indicator]]:duration-1000"
+                                    className="h-3 bg-[var(--surface-4)] [&>[data-slot=progress-indicator]]:bg-gradient-to-r [&>[data-slot=progress-indicator]]:from-emerald-500 [&>[data-slot=progress-indicator]]:to-teal-400 [&>[data-slot=progress-indicator]]:transition-all [&>[data-slot=progress-indicator]]:duration-1000"
                                 />
 
                                 {/* Section breakdown */}
@@ -632,18 +710,18 @@ export default function ProfilePage() {
                                                 "p-3 rounded-xl border transition-colors",
                                                 s.done
                                                     ? "bg-emerald-500/[0.04] border-emerald-500/[0.1]"
-                                                    : "bg-white/[0.01] border-white/[0.04]"
+                                                    : "bg-[var(--surface-1)] border-[var(--border-4)]"
                                             )}
                                         >
                                             <div className="flex items-center gap-1.5 mb-1">
-                                                <s.icon className={cn("w-3.5 h-3.5", s.done ? "text-emerald-400" : "text-white/30")} />
-                                                <p className="text-[11px] font-medium text-white/50 truncate">{s.label}</p>
+                                                <s.icon className={cn("w-3.5 h-3.5", s.done ? "text-emerald-400" : "text-[var(--text-30)]")} />
+                                                <p className="text-[11px] font-medium text-[var(--text-50)] truncate">{s.label}</p>
                                             </div>
                                             <div className="flex items-center justify-between">
-                                                <span className={cn("text-lg font-bold", s.done ? "text-emerald-400" : "text-white")}>
+                                                <span className={cn("text-lg font-bold", s.done ? "text-emerald-400" : "text-[var(--text-primary)]")}>
                                                     {s.value}%
                                                 </span>
-                                                <span className="text-[9px] text-white/20 font-semibold uppercase">{s.weight}</span>
+                                                <span className="text-[9px] text-[var(--text-20)] font-semibold uppercase">{s.weight}</span>
                                             </div>
                                         </div>
                                     ))}
@@ -686,7 +764,7 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Full Name */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Full Name <RequiredMark />
                                     {digiLockerConnected && (
                                         <span className="ml-2"><VerifiedTag /></span>
@@ -695,14 +773,14 @@ export default function ProfilePage() {
                                 <Input
                                     value={profile.fullName}
                                     readOnly
-                                    className="bg-white/[0.03] border-white/[0.06] text-white/80 cursor-not-allowed opacity-70 h-10"
+                                    className="bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-80)] cursor-not-allowed opacity-70 h-10"
                                 />
-                                <p className="text-[10px] text-white/20">Auto-filled from Google. Read-only.</p>
+                                <p className="text-[10px] text-[var(--text-20)]">Auto-filled from Google. Read-only.</p>
                             </div>
 
                             {/* Email */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Email <RequiredMark />
                                     {digiLockerConnected && (
                                         <span className="ml-2"><VerifiedTag /></span>
@@ -711,26 +789,26 @@ export default function ProfilePage() {
                                 <Input
                                     value={profile.email}
                                     readOnly
-                                    className="bg-white/[0.03] border-white/[0.06] text-white/80 cursor-not-allowed opacity-70 h-10"
+                                    className="bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-80)] cursor-not-allowed opacity-70 h-10"
                                 />
-                                <p className="text-[10px] text-white/20">Auto-filled from Google. Read-only.</p>
+                                <p className="text-[10px] text-[var(--text-20)]">Auto-filled from Google. Read-only.</p>
                             </div>
 
                             {/* State */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     State <RequiredMark />
                                 </Label>
                                 <Select
                                     value={profile.state}
                                     onValueChange={(v) => update("state", v)}
                                 >
-                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                         <SelectValue placeholder="Select State" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white max-h-60">
+                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)] max-h-60">
                                         {STATES.map((s) => (
-                                            <SelectItem key={s} value={s} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                            <SelectItem key={s} value={s} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                 {s}
                                             </SelectItem>
                                         ))}
@@ -740,7 +818,7 @@ export default function ProfilePage() {
 
                             {/* Gender */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Gender <RequiredMark />
                                 </Label>
                                 <RadioGroup
@@ -755,8 +833,8 @@ export default function ProfilePage() {
                                             className={cn(
                                                 "flex-1 flex items-center justify-center gap-2 cursor-pointer border rounded-lg py-2.5 px-3 text-sm transition-all",
                                                 profile.gender === g
-                                                    ? "bg-white/[0.08] border-white/[0.2] text-white"
-                                                    : "bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/[0.1]"
+                                                    ? "bg-[var(--surface-8)] border-white/[0.2] text-[var(--text-primary)]"
+                                                    : "bg-[var(--surface-2)] border-[var(--border-6)] text-[var(--text-40)] hover:border-[var(--border-10)]"
                                             )}
                                         >
                                             <RadioGroupItem value={g} id={`gender-${g}`} className="sr-only" />
@@ -768,10 +846,10 @@ export default function ProfilePage() {
 
                             {/* Date of Birth */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs flex items-center justify-between">
+                                <Label className="text-[var(--text-60)] text-xs flex items-center justify-between">
                                     <span>Date of Birth <RequiredMark /></span>
                                     {age !== null && (
-                                        <span className="text-white/30 font-normal">Age: {age} years</span>
+                                        <span className="text-[var(--text-30)] font-normal">Age: {age} years</span>
                                     )}
                                 </Label>
                                 <div className="relative">
@@ -779,27 +857,27 @@ export default function ProfilePage() {
                                         type="date"
                                         value={profile.dob}
                                         onChange={(e) => update("dob", e.target.value)}
-                                        className="bg-white/[0.03] border-white/[0.06] text-white h-10 [&::-webkit-calendar-picker-indicator]:invert"
+                                        className="bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10 [&::-webkit-calendar-picker-indicator]:invert"
                                     />
-                                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20 pointer-events-none" />
+                                    <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)] pointer-events-none" />
                                 </div>
                             </div>
 
                             {/* Occupation */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Current Occupation <RequiredMark />
                                 </Label>
                                 <Select
                                     value={profile.occupation}
                                     onValueChange={(v) => update("occupation", v)}
                                 >
-                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                         <SelectValue placeholder="Select Occupation" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                         {OCCUPATIONS.map((o) => (
-                                            <SelectItem key={o} value={o} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                            <SelectItem key={o} value={o} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                 {o}
                                             </SelectItem>
                                         ))}
@@ -822,19 +900,19 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Education Level */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Current Education Level <RequiredMark />
                                 </Label>
                                 <Select
                                     value={profile.educationLevel}
                                     onValueChange={(v) => update("educationLevel", v)}
                                 >
-                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                         <SelectValue placeholder="Select Level" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                         {EDUCATION_LEVELS.map((l) => (
-                                            <SelectItem key={l} value={l} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                            <SelectItem key={l} value={l} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                 {l}
                                             </SelectItem>
                                         ))}
@@ -844,7 +922,7 @@ export default function ProfilePage() {
 
                             {/* Marks Percentage */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Marks Percentage (Latest Exam) <RequiredMark />
                                 </Label>
                                 <div className="relative">
@@ -855,9 +933,9 @@ export default function ProfilePage() {
                                         value={profile.marksPercentage}
                                         onChange={(e) => update("marksPercentage", e.target.value)}
                                         placeholder="e.g. 85"
-                                        className="bg-white/[0.03] border-white/[0.06] text-white h-10 pr-8"
+                                        className="bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10 pr-8"
                                     />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-white/20 text-sm">
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--text-20)] text-sm">
                                         %
                                     </span>
                                 </div>
@@ -878,19 +956,19 @@ export default function ProfilePage() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                             {/* Category */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Category <RequiredMark />
                                 </Label>
                                 <Select
                                     value={profile.category}
                                     onValueChange={(v) => update("category", v)}
                                 >
-                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                         <SelectValue placeholder="Select Category" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                         {CATEGORIES.map((c) => (
-                                            <SelectItem key={c} value={c} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                            <SelectItem key={c} value={c} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                 {c}
                                             </SelectItem>
                                         ))}
@@ -900,19 +978,19 @@ export default function ProfilePage() {
 
                             {/* Annual Income */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Annual Family Income <RequiredMark />
                                 </Label>
                                 <Select
                                     value={profile.annualIncome}
                                     onValueChange={(v) => update("annualIncome", v)}
                                 >
-                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                         <SelectValue placeholder="Select Income Range" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                         {INCOME_BRACKETS.map((i) => (
-                                            <SelectItem key={i} value={i} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                            <SelectItem key={i} value={i} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                 {i}
                                             </SelectItem>
                                         ))}
@@ -922,9 +1000,9 @@ export default function ProfilePage() {
 
                             {/* Minority Status */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">Minority Status</Label>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                                    <span className="text-sm text-white/60">
+                                <Label className="text-[var(--text-60)] text-xs">Minority Status</Label>
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border-4)]">
+                                    <span className="text-sm text-[var(--text-60)]">
                                         {profile.minorityStatus ? "Yes — Minority" : "No"}
                                     </span>
                                     <Switch
@@ -936,9 +1014,9 @@ export default function ProfilePage() {
 
                             {/* Disability Status */}
                             <div className="space-y-2">
-                                <Label className="text-white/60 text-xs">Disability Status</Label>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.04]">
-                                    <span className="text-sm text-white/60">
+                                <Label className="text-[var(--text-60)] text-xs">Disability Status</Label>
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-2)] border border-[var(--border-4)]">
+                                    <span className="text-sm text-[var(--text-60)]">
                                         {profile.disabilityStatus ? "Yes — PwD" : "No"}
                                     </span>
                                     <Switch
@@ -950,7 +1028,7 @@ export default function ProfilePage() {
 
                             {/* Rural / Urban */}
                             <div className="space-y-2 sm:col-span-2">
-                                <Label className="text-white/60 text-xs">
+                                <Label className="text-[var(--text-60)] text-xs">
                                     Area Type
                                 </Label>
                                 <RadioGroup
@@ -965,8 +1043,8 @@ export default function ProfilePage() {
                                             className={cn(
                                                 "flex-1 flex items-center justify-center gap-2 cursor-pointer border rounded-lg py-2.5 px-3 text-sm transition-all",
                                                 profile.areaType === a
-                                                    ? "bg-white/[0.08] border-white/[0.2] text-white"
-                                                    : "bg-white/[0.02] border-white/[0.06] text-white/40 hover:border-white/[0.1]"
+                                                    ? "bg-[var(--surface-8)] border-white/[0.2] text-[var(--text-primary)]"
+                                                    : "bg-[var(--surface-2)] border-[var(--border-6)] text-[var(--text-40)] hover:border-[var(--border-10)]"
                                             )}
                                         >
                                             <RadioGroupItem value={a} id={`area-${a}`} className="sr-only" />
@@ -1008,10 +1086,10 @@ export default function ProfilePage() {
                                         animate={{ opacity: 1, height: "auto" }}
                                         exit={{ opacity: 0, height: 0, marginBottom: 0 }}
                                         transition={{ duration: 0.3 }}
-                                        className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-5 relative"
+                                        className="bg-[var(--surface-2)] border border-[var(--border-5)] rounded-xl p-5 relative"
                                     >
                                         <div className="flex items-center justify-between mb-4">
-                                            <p className="text-sm font-semibold text-white/70">
+                                            <p className="text-sm font-semibold text-[var(--text-70)]">
                                                 Family Member {idx + 1}
                                             </p>
                                             <button
@@ -1025,19 +1103,19 @@ export default function ProfilePage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             {/* Relation */}
                                             <div className="space-y-1.5">
-                                                <Label className="text-white/50 text-xs">Relation</Label>
+                                                <Label className="text-[var(--text-50)] text-xs">Relation</Label>
                                                 <Select
                                                     value={member.relation}
                                                     onValueChange={(v) =>
                                                         updateFamilyMember(member.id, "relation", v)
                                                     }
                                                 >
-                                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                                         <SelectValue placeholder="Select Relation" />
                                                     </SelectTrigger>
-                                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                                         {RELATIONS.map((r) => (
-                                                            <SelectItem key={r} value={r} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                                            <SelectItem key={r} value={r} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                                 {r}
                                                             </SelectItem>
                                                         ))}
@@ -1047,19 +1125,19 @@ export default function ProfilePage() {
 
                                             {/* Occupation */}
                                             <div className="space-y-1.5">
-                                                <Label className="text-white/50 text-xs">Occupation</Label>
+                                                <Label className="text-[var(--text-50)] text-xs">Occupation</Label>
                                                 <Select
                                                     value={member.occupation}
                                                     onValueChange={(v) =>
                                                         updateFamilyMember(member.id, "occupation", v)
                                                     }
                                                 >
-                                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                                         <SelectValue placeholder="Select Occupation" />
                                                     </SelectTrigger>
-                                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                                         {OCCUPATIONS.map((o) => (
-                                                            <SelectItem key={o} value={o} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                                            <SelectItem key={o} value={o} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                                 {o}
                                                             </SelectItem>
                                                         ))}
@@ -1069,19 +1147,19 @@ export default function ProfilePage() {
 
                                             {/* Income */}
                                             <div className="space-y-1.5">
-                                                <Label className="text-white/50 text-xs">Income</Label>
+                                                <Label className="text-[var(--text-50)] text-xs">Income</Label>
                                                 <Select
                                                     value={member.income}
                                                     onValueChange={(v) =>
                                                         updateFamilyMember(member.id, "income", v)
                                                     }
                                                 >
-                                                    <SelectTrigger className="w-full bg-white/[0.03] border-white/[0.06] text-white h-10">
+                                                    <SelectTrigger className="w-full bg-[var(--surface-3)] border-[var(--border-6)] text-[var(--text-primary)] h-10">
                                                         <SelectValue placeholder="Select Income" />
                                                     </SelectTrigger>
-                                                    <SelectContent className="bg-[#1a1a1a] border-white/[0.08] text-white">
+                                                    <SelectContent className="bg-[#1a1a1a] border-[var(--border-8)] text-[var(--text-primary)]">
                                                         {INCOME_BRACKETS.map((i) => (
-                                                            <SelectItem key={i} value={i} className="hover:bg-white/[0.06] focus:bg-white/[0.06]">
+                                                            <SelectItem key={i} value={i} className="hover:bg-[var(--surface-6)] focus:bg-[var(--surface-6)]">
                                                                 {i}
                                                             </SelectItem>
                                                         ))}
@@ -1091,11 +1169,11 @@ export default function ProfilePage() {
 
                                             {/* Land Ownership */}
                                             <div className="space-y-1.5">
-                                                <Label className="text-white/50 text-xs">
+                                                <Label className="text-[var(--text-50)] text-xs">
                                                     Land Ownership
                                                 </Label>
-                                                <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.01] border border-white/[0.04] h-10">
-                                                    <span className="text-sm text-white/50">
+                                                <div className="flex items-center justify-between p-3 rounded-lg bg-[var(--surface-1)] border border-[var(--border-4)] h-10">
+                                                    <span className="text-sm text-[var(--text-50)]">
                                                         {member.landOwnership ? "Yes" : "No"}
                                                     </span>
                                                     <Switch
@@ -1116,7 +1194,7 @@ export default function ProfilePage() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={addFamilyMember}
-                                className="w-full py-3 rounded-xl border-2 border-dashed border-white/[0.06] hover:border-white/[0.12] text-white/30 hover:text-white/50 text-sm font-medium transition-all flex items-center justify-center gap-2"
+                                className="w-full py-3 rounded-xl border-2 border-dashed border-[var(--border-6)] hover:border-[var(--border-12)] text-[var(--text-30)] hover:text-[var(--text-50)] text-sm font-medium transition-all flex items-center justify-center gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Add Family Member
@@ -1131,43 +1209,63 @@ export default function ProfilePage() {
                         transition={{ delay: 0.55 }}
                         className="sticky bottom-4 z-20"
                     >
-                        <div className="bg-[#111111]/90 backdrop-blur-xl border border-white/[0.06] rounded-2xl p-4 flex items-center justify-between shadow-[0_-4px_30px_rgba(0,0,0,0.4)]">
-                            <div className="hidden sm:block">
-                                <p className="text-sm text-white/40">
-                                    Profile completion:{" "}
-                                    <span className="text-white font-semibold">{completion.total}%</span>
-                                </p>
-                            </div>
-                            <div className="flex items-center gap-3 w-full sm:w-auto">
-                                <Button
-                                    variant="outline"
-                                    onClick={() => router.push("/dashboard")}
-                                    className="flex-1 sm:flex-none border-white/[0.06] bg-white/[0.03] text-white/50 hover:text-white hover:bg-white/[0.06]"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    onClick={handleSave}
-                                    disabled={saving}
-                                    className="flex-1 sm:flex-none bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold border-0 shadow-lg shadow-emerald-500/20"
-                                >
-                                    {saving ? (
-                                        <>
-                                            <motion.div
-                                                animate={{ rotate: 360 }}
-                                                transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                                            >
+                        <div className="bg-[var(--bg-card)]/90 backdrop-blur-xl border border-[var(--border-6)] rounded-2xl p-4 flex flex-col gap-2 shadow-[0_-4px_30px_rgba(0,0,0,0.4)]">
+                            {/* Save feedback message */}
+                            <AnimatePresence>
+                                {saveMessage && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 4 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -4 }}
+                                        className={cn(
+                                            "text-xs font-medium px-3 py-1.5 rounded-lg text-center",
+                                            saveMessage.type === "success"
+                                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                                        )}
+                                    >
+                                        {saveMessage.text}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                            <div className="flex items-center justify-between">
+                                <div className="hidden sm:block">
+                                    <p className="text-sm text-[var(--text-40)]">
+                                        Profile completion:{" "}
+                                        <span className="text-[var(--text-primary)] font-semibold">{completion.total}%</span>
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-3 w-full sm:w-auto">
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => router.push("/dashboard")}
+                                        className="flex-1 sm:flex-none border-[var(--border-6)] bg-[var(--surface-3)] text-[var(--text-50)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)]"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={handleSave}
+                                        disabled={saving || loading}
+                                        className="flex-1 sm:flex-none bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold border-0 shadow-lg shadow-emerald-500/20"
+                                    >
+                                        {saving ? (
+                                            <>
+                                                <motion.div
+                                                    animate={{ rotate: 360 }}
+                                                    transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                                                >
+                                                    <Save className="w-4 h-4" />
+                                                </motion.div>
+                                                Saving...
+                                            </>
+                                        ) : (
+                                            <>
                                                 <Save className="w-4 h-4" />
-                                            </motion.div>
-                                            Saving...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Save className="w-4 h-4" />
-                                            Update Profile
-                                        </>
-                                    )}
-                                </Button>
+                                                Update Profile
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

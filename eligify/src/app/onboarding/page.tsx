@@ -108,27 +108,27 @@ export default function Onboarding() {
     };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen bg-[var(--bg-page)] flex flex-col items-center justify-center p-4">
             {/* Grid Background */}
             <div className="absolute inset-0 grid-bg grid-fade pointer-events-none" />
 
             {/* Background Elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-white/[0.01] blur-[120px]" />
-                <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-white/[0.01] blur-[120px]" />
+                <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-[var(--surface-1)] blur-[120px]" />
+                <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-[var(--surface-1)] blur-[120px]" />
             </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="w-full max-w-md bg-[#111111] border border-[#1a1a1a] rounded-2xl shadow-2xl p-8 relative z-10"
+                className="w-full max-w-md bg-[var(--bg-card)] border border-[#1a1a1a] rounded-2xl shadow-2xl p-8 relative z-10"
             >
                 <div className="flex justify-center mb-6">
                     <EligifyLogo imgClassName="h-10" />
                 </div>
 
                 <div className="text-center mb-8">
-                    <h2 className="text-2xl font-bold text-white">Complete your basic details</h2>
+                    <h2 className="text-2xl font-bold text-[var(--text-primary)]">Complete your basic details</h2>
                     <p className="text-[#737373] text-sm mt-2">
                         This helps us determine your eligibility accurately
                     </p>
@@ -143,11 +143,11 @@ export default function Onboarding() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     {/* State Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">State of Residence</label>
+                        <label className="text-sm font-medium text-[var(--text-primary)]">State of Residence</label>
                         <select
                             value={formData.state}
                             onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                            className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 appearance-none"
+                            className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-white/30 appearance-none"
                             required
                         >
                             <option value="" disabled>Select State</option>
@@ -157,7 +157,7 @@ export default function Onboarding() {
 
                     {/* Gender Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">Gender</label>
+                        <label className="text-sm font-medium text-[var(--text-primary)]">Gender</label>
                         <div className="flex gap-4">
                             {GENDERS.map((g) => (
                                 <label
@@ -165,7 +165,7 @@ export default function Onboarding() {
                                     className={cn(
                                         "flex-1 cursor-pointer border rounded-lg py-3 flex items-center justify-center text-sm font-medium transition-all",
                                         formData.gender === g
-                                            ? "bg-white/10 border-white/30 text-white"
+                                            ? "bg-white/10 border-white/30 text-[var(--text-primary)]"
                                             : "bg-[#1a1a1a] border-[#252525] text-[#737373] hover:border-[#3a3a3a]"
                                     )}
                                 >
@@ -185,16 +185,16 @@ export default function Onboarding() {
 
                     {/* Date of Birth Selection */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-white flex justify-between">
+                        <label className="text-sm font-medium text-[var(--text-primary)] flex justify-between">
                             Date of Birth
-                            {age !== null && <span className="text-white/60">Age: {age} years</span>}
+                            {age !== null && <span className="text-[var(--text-60)]">Age: {age} years</span>}
                         </label>
                         <div className="relative">
                             <input
                                 type="date"
                                 value={formData.dob}
                                 onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-white focus:outline-none focus:border-white/30 appearance-none [&::-webkit-calendar-picker-indicator]:invert"
+                                className="w-full px-4 py-3 bg-[#1a1a1a] border border-[#252525] rounded-lg text-[var(--text-primary)] focus:outline-none focus:border-white/30 appearance-none [&::-webkit-calendar-picker-indicator]:invert"
                                 required
                             />
                             <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -210,7 +210,7 @@ export default function Onboarding() {
                         className={cn(
                             "w-full py-4 rounded-lg font-semibold flex items-center justify-center gap-2 transition-all mt-8",
                             isValid && !loading
-                                ? "bg-white text-black hover:shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                                ? "bg-white text-black hover:shadow-[0_0_20px_var(--border-15)]"
                                 : "bg-[#1a1a1a] text-[#3a3a3a] cursor-not-allowed"
                         )}
                     >

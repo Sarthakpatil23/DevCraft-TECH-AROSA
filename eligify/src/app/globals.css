@@ -116,18 +116,142 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-/* Grid background utility */
+/* ─── Eligify Theme System ────────────────────────────────── */
+/* Default: Dark theme */
+:root {
+  /* Page backgrounds */
+  --bg-page: #0a0a0a;
+  --bg-sidebar: #0e0e0e;
+  --bg-card: #111111;
+  --bg-deep: #080808;
+  --bg-hover: #131313;
+  --bg-elevated: #151515;
+
+  /* Text (RGB channels for alpha support) */
+  --text-rgb: 255, 255, 255;
+  --text-primary: rgb(var(--text-rgb));
+  --text-80: rgba(var(--text-rgb), 0.8);
+  --text-70: rgba(var(--text-rgb), 0.7);
+  --text-60: rgba(var(--text-rgb), 0.6);
+  --text-50: rgba(var(--text-rgb), 0.5);
+  --text-45: rgba(var(--text-rgb), 0.45);
+  --text-40: rgba(var(--text-rgb), 0.4);
+  --text-35: rgba(var(--text-rgb), 0.35);
+  --text-30: rgba(var(--text-rgb), 0.3);
+  --text-25: rgba(var(--text-rgb), 0.25);
+  --text-20: rgba(var(--text-rgb), 0.2);
+  --text-15: rgba(var(--text-rgb), 0.15);
+  --text-10: rgba(var(--text-rgb), 0.1);
+  --text-05: rgba(var(--text-rgb), 0.05);
+
+  /* Borders (RGB channels) */
+  --border-rgb: 255, 255, 255;
+  --border-3: rgba(var(--border-rgb), 0.03);
+  --border-4: rgba(var(--border-rgb), 0.04);
+  --border-5: rgba(var(--border-rgb), 0.05);
+  --border-6: rgba(var(--border-rgb), 0.06);
+  --border-8: rgba(var(--border-rgb), 0.08);
+  --border-10: rgba(var(--border-rgb), 0.1);
+  --border-12: rgba(var(--border-rgb), 0.12);
+  --border-15: rgba(var(--border-rgb), 0.15);
+  --border-20: rgba(var(--border-rgb), 0.2);
+
+  /* Surface overlays (semi-transparent) */
+  --surface-rgb: 255, 255, 255;
+  --surface-1: rgba(var(--surface-rgb), 0.01);
+  --surface-2: rgba(var(--surface-rgb), 0.02);
+  --surface-3: rgba(var(--surface-rgb), 0.03);
+  --surface-4: rgba(var(--surface-rgb), 0.04);
+  --surface-5: rgba(var(--surface-rgb), 0.05);
+  --surface-6: rgba(var(--surface-rgb), 0.06);
+  --surface-8: rgba(var(--surface-rgb), 0.08);
+  --surface-10: rgba(var(--surface-rgb), 0.1);
+
+  /* Overlay */
+  --overlay: rgba(0, 0, 0, 0.6);
+  --overlay-light: rgba(0, 0, 0, 0.2);
+
+  /* Scrollbar */
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-track: transparent;
+}
+
+/* ─── Light Theme ─────────────────────────────────────────
+   Dark text on a light background needs MUCH higher opacity
+   than white text on dark to be legible. Each level below is
+   intentionally boosted vs its dark-mode counterpart.
+   ──────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --bg-page: #f5f5f7;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-deep: #ecedf0;
+  --bg-hover: #ededef;
+  --bg-elevated: #e5e5e7;
+
+  /* Text — boosted opacities for readability                 *
+   * Dark-mode 0.80 → Light-mode 0.90  (strong)              *
+   * Dark-mode 0.40 → Light-mode 0.65  (secondary)           *
+   * Dark-mode 0.20 → Light-mode 0.45  (muted)               *
+   * Dark-mode 0.10 → Light-mode 0.28  (ghost)               */
+  --text-rgb: 15, 23, 42;
+  --text-primary: rgba(var(--text-rgb), 0.95);
+  --text-80: rgba(var(--text-rgb), 0.90);
+  --text-70: rgba(var(--text-rgb), 0.82);
+  --text-60: rgba(var(--text-rgb), 0.75);
+  --text-50: rgba(var(--text-rgb), 0.68);
+  --text-45: rgba(var(--text-rgb), 0.65);
+  --text-40: rgba(var(--text-rgb), 0.60);
+  --text-35: rgba(var(--text-rgb), 0.55);
+  --text-30: rgba(var(--text-rgb), 0.50);
+  --text-25: rgba(var(--text-rgb), 0.45);
+  --text-20: rgba(var(--text-rgb), 0.40);
+  --text-15: rgba(var(--text-rgb), 0.34);
+  --text-10: rgba(var(--text-rgb), 0.28);
+  --text-05: rgba(var(--text-rgb), 0.18);
+
+  /* Borders — boosted for visual definition */
+  --border-rgb: 0, 0, 0;
+  --border-3: rgba(var(--border-rgb), 0.06);
+  --border-4: rgba(var(--border-rgb), 0.08);
+  --border-5: rgba(var(--border-rgb), 0.09);
+  --border-6: rgba(var(--border-rgb), 0.10);
+  --border-8: rgba(var(--border-rgb), 0.13);
+  --border-10: rgba(var(--border-rgb), 0.15);
+  --border-12: rgba(var(--border-rgb), 0.18);
+  --border-15: rgba(var(--border-rgb), 0.22);
+  --border-20: rgba(var(--border-rgb), 0.28);
+
+  /* Surface overlays — boosted for visible hover states */
+  --surface-rgb: 0, 0, 0;
+  --surface-1: rgba(var(--surface-rgb), 0.02);
+  --surface-2: rgba(var(--surface-rgb), 0.03);
+  --surface-3: rgba(var(--surface-rgb), 0.04);
+  --surface-4: rgba(var(--surface-rgb), 0.05);
+  --surface-5: rgba(var(--surface-rgb), 0.06);
+  --surface-6: rgba(var(--surface-rgb), 0.07);
+  --surface-8: rgba(var(--surface-rgb), 0.10);
+  --surface-10: rgba(var(--surface-rgb), 0.13);
+
+  --overlay: rgba(0, 0, 0, 0.35);
+  --overlay-light: rgba(0, 0, 0, 0.12);
+
+  --scrollbar-thumb: rgba(0, 0, 0, 0.18);
+  --scrollbar-track: transparent;
+}
+
+/* Grid background utility — theme-aware */
 .grid-bg {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(var(--border-3) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-3) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 .grid-bg-dense {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    linear-gradient(var(--border-5) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-5) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
@@ -141,7 +265,51 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+/* Smooth theme transition */
+*,
+*::before,
+*::after {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}
+
+/* Light mode card shadows for depth */
+[data-theme="light"] .bg-\[var\(--bg-card\)\] {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+/* Ensure body picks up theme bg */
+body {
+  background-color: var(--bg-page) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Light mode sidebar border */
+[data-theme="light"] .bg-\[var\(--bg-sidebar\)\] {
+  box-shadow: 1px 0 0 rgba(0, 0, 0, 0.06);
+}
+
+/* Logo handling — white bg logo on dark backgrounds */
+[data-theme="dark"] .logo-themed {
+  mix-blend-mode: screen;
+  filter: brightness(1.1);
 }

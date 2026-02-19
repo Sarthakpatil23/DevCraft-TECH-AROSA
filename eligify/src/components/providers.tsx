@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
+import { ThemeProvider } from "@/context/theme-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-    // Google OAuth is now handled entirely by Django backend
-    return <>{children}</>;
+    return <ThemeProvider>{children}</ThemeProvider>;
 }
