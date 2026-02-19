@@ -93,9 +93,6 @@ Follow these instructions to set up and run the project locally.
     
     # Apply database migrations
     python manage.py migrate
-    
-    # Apply database migrations
-    python manage.py migrate
 
     # Configure Environment Variables
     # Create a .env file in the backend root directory (c:\ELIGIFY\backend\.env)
