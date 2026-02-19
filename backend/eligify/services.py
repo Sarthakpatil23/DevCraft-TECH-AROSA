@@ -120,6 +120,7 @@ def _call_gemini_with_retry(client, model: str, contents: str, max_retries: int 
             return response
         except genai_errors.ClientError as e:
             if '429' in str(e) or 'RESOURCE_EXHAUSTED' in str(e):
+                logger.error(f"Gemini API 429/Resource Exhausted Error details: {e}")
                 if attempt < max_retries:
                     # Extract retry delay from error or use default
                     wait_time = 15 * (attempt + 1)  # 15s, 30s
@@ -174,7 +175,7 @@ def extract_rules_from_pdf(pdf_text: str, language: str = "English") -> dict:
         except GeminiRateLimitError:
             raise
         except Exception as e:
-            logger.error(f"Gemini API error: {e}")
+            logger.error(f"Gemini API generic error details: {e}", exc_info=True)
             raise
 
 
@@ -250,6 +251,7 @@ def generate_chat_response(
     full_prompt = "\n".join(contents)
 
     try:
+        # Use gemini-2.5-flash model as requested
         response = _call_gemini_with_retry(client, "gemini-2.5-flash", full_prompt)
         return response.text.strip()
     except GeminiRateLimitError:

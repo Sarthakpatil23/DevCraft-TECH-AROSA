@@ -488,7 +488,7 @@ export default function ProfilePage() {
                     <img
                         src="/logo.png"
                         alt="Eligify Logo"
-                        className="h-20 w-auto object-contain logo-themed"
+                        className="h-28 w-auto object-contain logo-themed"
                     />
                     <button
                         onClick={() => setSidebarOpen(false)}
@@ -1286,3 +1286,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+

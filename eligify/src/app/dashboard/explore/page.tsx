@@ -488,7 +488,7 @@ export default function ExploreSchemesPage() {
                 )}
             >
                 <div className="p-6 pb-4 flex items-center gap-3">
-                    <img src="/logo.png" alt="Eligify Logo" className="h-20 w-auto object-contain logo-themed" />
+                    <img src="/logo.png" alt="Eligify Logo" className="h-28 w-auto object-contain logo-themed" />
                     <button
                         onClick={() => setSidebarOpen(false)}
                         className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"
@@ -779,3 +779,4 @@ export default function ExploreSchemesPage() {
         </div>
     );
 }
+

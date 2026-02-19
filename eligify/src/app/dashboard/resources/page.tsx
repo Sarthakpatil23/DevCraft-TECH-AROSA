@@ -64,6 +64,7 @@ interface Resource {
     category: string;
     duration?: string;
     icon: React.ElementType;
+    videoId?: string;
 }
 
 interface FAQ {
@@ -90,6 +91,7 @@ const RESOURCES: Resource[] = [
         category: "scholarships",
         duration: "12 min",
         icon: GraduationCap,
+        videoId: "vv1FRaj9OMY",
     },
     {
         id: "vid-2",
@@ -99,6 +101,7 @@ const RESOURCES: Resource[] = [
         category: "walkthrough",
         duration: "18 min",
         icon: Video,
+        videoId: "8omdOUB63_g",
     },
     {
         id: "vid-3",
@@ -108,6 +111,7 @@ const RESOURCES: Resource[] = [
         category: "eligibility",
         duration: "8 min",
         icon: Target,
+        videoId: "_EYkPRBvarY",
     },
     {
         id: "guide-1",
@@ -149,6 +153,7 @@ const RESOURCES: Resource[] = [
         category: "walkthrough",
         duration: "15 min",
         icon: Play,
+        videoId: "vUkRxMt0X5A",
     },
 ];
 
@@ -204,13 +209,14 @@ export default function ResourcesPage() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeCategory, setActiveCategory] = useState("all");
     const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
+    const [playingVideoId, setPlayingVideoId] = useState<string | null>(null);
     const [userName, setUserName] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         if (!token) { router.push("/"); return; }
         fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => { });
     }, [router]);
 
     const handleLogout = () => {
@@ -237,7 +243,7 @@ export default function ResourcesPage() {
             </AnimatePresence>
             <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
                 <div className="p-6 pb-4 flex items-center gap-3">
-                    <img src="/logo.png" alt="Eligify" className="h-20 w-auto object-contain logo-themed" />
+                    <img src="/logo.png" alt="Eligify" className="h-28 w-auto object-contain logo-themed" />
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
@@ -259,7 +265,7 @@ export default function ResourcesPage() {
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
-        <div className="p-4 border-t border-[var(--border-4)]">
+                <div className="p-4 border-t border-[var(--border-4)]">
                     <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
@@ -295,7 +301,7 @@ export default function ResourcesPage() {
                     {/* Category Tabs */}
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-2 mb-8 overflow-x-auto pb-1 scrollbar-none">
                         {CATEGORIES.map((cat) => (
-                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={cn("px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border", activeCategory === cat.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-30)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-50)]")}> 
+                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={cn("px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border", activeCategory === cat.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-30)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-50)]")}>
                                 {t(`resources.categories.${cat.key}`)}
                             </button>
                         ))}
@@ -310,21 +316,49 @@ export default function ResourcesPage() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {videos.map((resource, i) => {
                                     const Icon = resource.icon;
+                                    const isPlaying = playingVideoId === resource.id;
+
                                     return (
-                                        <motion.div key={resource.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }} className="bg-[var(--bg-card)] border border-[var(--border-6)] rounded-xl overflow-hidden hover:border-[var(--border-12)] transition-all group cursor-pointer">
-                                            {/* Thumbnail */}
-                                            <div className="relative h-36 bg-gradient-to-br from-white/[0.02] to-white/[0.005] flex items-center justify-center overflow-hidden">
-                                                <div className="absolute inset-0 bg-gradient-to-t from-[var(--bg-card)] via-transparent to-transparent z-10" />
-                                                <Icon className="w-10 h-10 text-white/[0.06]" />
-                                                <div className="absolute inset-0 flex items-center justify-center z-20">
-                                                    <div className="w-11 h-11 rounded-full bg-[var(--surface-8)] border border-[var(--border-10)] flex items-center justify-center backdrop-blur-sm group-hover:bg-emerald-500/20 group-hover:border-emerald-500/30 transition-colors">
-                                                        <Play className="w-4 h-4 text-[var(--text-60)] ml-0.5 group-hover:text-emerald-400 transition-colors" />
-                                                    </div>
-                                                </div>
-                                                {resource.duration && (
-                                                    <Badge className="absolute bottom-2 right-2 z-20 bg-[var(--overlay)] text-[var(--text-60)] border-[var(--border-8)] text-[9px] gap-1 backdrop-blur-sm">
-                                                        <Clock className="w-2.5 h-2.5" />{resource.duration}
-                                                    </Badge>
+                                        <motion.div key={resource.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 * i }} className="bg-[var(--bg-card)] border border-[var(--border-6)] rounded-xl overflow-hidden hover:border-[var(--border-12)] transition-all group">
+                                            {/* Thumbnail / Video */}
+                                            <div className="relative h-48 bg-black flex items-center justify-center overflow-hidden cursor-pointer" onClick={() => resource.videoId && setPlayingVideoId(resource.id)}>
+                                                {isPlaying && resource.videoId ? (
+                                                    <iframe
+                                                        width="100%"
+                                                        height="100%"
+                                                        src={`https://www.youtube.com/embed/${resource.videoId}?autoplay=1`}
+                                                        title={resource.title}
+                                                        frameBorder="0"
+                                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                        allowFullScreen
+                                                        className="absolute inset-0 w-full h-full"
+                                                    />
+                                                ) : (
+                                                    <>
+                                                        {resource.videoId ? (
+                                                            <img
+                                                                src={`https://img.youtube.com/vi/${resource.videoId}/hqdefault.jpg`}
+                                                                alt={resource.title}
+                                                                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500"
+                                                            />
+                                                        ) : (
+                                                            <div className="absolute inset-0 bg-gradient-to-br from-[var(--surface-4)] to-[var(--surface-2)]" />
+                                                        )}
+                                                        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors z-10" />
+
+                                                        {/* Play Button */}
+                                                        <div className="absolute inset-0 flex items-center justify-center z-20">
+                                                            <div className="w-12 h-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center backdrop-blur-md group-hover:scale-110 group-hover:bg-emerald-500 group-hover:border-emerald-500 transition-all duration-300 shadow-lg">
+                                                                <Play className="w-5 h-5 text-white ml-0.5 fill-current" />
+                                                            </div>
+                                                        </div>
+
+                                                        {resource.duration && (
+                                                            <Badge className="absolute bottom-2 right-2 z-20 bg-black/60 text-white border-none text-[10px] font-medium backdrop-blur-md px-1.5 py-0.5 rounded-md">
+                                                                {resource.duration}
+                                                            </Badge>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                             {/* Info */}
@@ -333,7 +367,9 @@ export default function ResourcesPage() {
                                                 <p className="text-[11px] text-[var(--text-25)] leading-relaxed line-clamp-2">{resource.description}</p>
                                                 <div className="flex items-center justify-between mt-3">
                                                     <Badge className="bg-[var(--surface-4)] text-[var(--text-20)] border-[var(--border-5)] text-[9px]">{CATEGORIES.find((c) => c.key === resource.category)?.label}</Badge>
-                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">{t("resources.watch")}<Play className="w-3 h-3" /></span>
+                                                    <button onClick={(e) => { e.stopPropagation(); resource.videoId && setPlayingVideoId(resource.id); }} className="text-[10px] text-emerald-400 font-medium flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hover:underline">
+                                                        {t("resources.watch")}<Play className="w-2.5 h-2.5" />
+                                                    </button>
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -415,3 +451,4 @@ export default function ResourcesPage() {
         </div>
     );
 }
+

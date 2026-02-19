@@ -350,7 +350,7 @@ export default function SchemeIntelligencePage() {
             <AnimatePresence>{sidebarOpen && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden" />)}</AnimatePresence>
             <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
                 <div className="p-6 pb-4 flex items-center gap-3">
-                    <img src="/logo.png" alt="Eligify Logo" className="h-20 w-auto object-contain logo-themed" />
+                    <img src="/logo.png" alt="Eligify Logo" className="h-28 w-auto object-contain logo-themed" />
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
@@ -625,3 +625,4 @@ export default function SchemeIntelligencePage() {
         </div>
     );
 }
+
