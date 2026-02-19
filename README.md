@@ -12,6 +12,24 @@ By bridging the gap between bureaucratic logic and citizen needs, Eligify ensure
 -   **Document Analysis**: (Concept) automated verification of documents against criteria.
 -   **Integrated Architecture**: Next.js frontend served seamlessly by a robust Django backend.
 
+##  Screenshots
+
+<!-- Paste your image links here -->
+
+### Landing Page
+![Landing Page](image.png)
+### Dashboard
+![Dashboard](image-1.png)
+
+### Explore Schemes
+![Explore Schemes](image-2.png)
+
+### Evaluation Results
+![Evaluation Results](image-3.png)
+
+### Resources
+![Resources](image-4.png)
+
 ## 🛠️ Tech Stack
 
 -   **Frontend**: Next.js 15 (React), TypeScript, Tailwind CSS, Framer Motion, Lucide Icons.
