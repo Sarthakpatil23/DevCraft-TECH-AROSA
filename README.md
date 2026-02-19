@@ -30,10 +30,6 @@ By bridging the gap between bureaucratic logic and citizen needs, Eligify ensure
 ### Resources
 ![Resources](image-4.png)
 
-### more screenshots
-![Resources](/Screenshots)
-
-
 ## 🛠️ Tech Stack
 
 -   **Frontend**: Next.js 15 (React), TypeScript, Tailwind CSS, Framer Motion, Lucide Icons.
