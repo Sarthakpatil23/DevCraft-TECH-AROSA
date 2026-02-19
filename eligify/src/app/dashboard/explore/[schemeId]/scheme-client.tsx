@@ -210,7 +210,7 @@ export default function SchemeIntelligencePage() {
         const token = localStorage.getItem("access_token");
         if (!token) { router.push("/"); return; }
         fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
-            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => { });
     }, [router]);
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
 
@@ -348,7 +348,7 @@ export default function SchemeIntelligencePage() {
         <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex">
             {/* ═══ SIDEBAR ═══ */}
             <AnimatePresence>{sidebarOpen && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden" />)}</AnimatePresence>
-            <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}> 
+            <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
                 <div className="p-6 pb-4 flex items-center gap-3">
                     <img src="/logo.png" alt="Eligify Logo" className="h-20 w-auto object-contain logo-themed" />
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"><X className="w-5 h-5" /></button>
@@ -361,7 +361,7 @@ export default function SchemeIntelligencePage() {
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
                     {sidebarItems.map((item) => {
                         const Icon = item.icon; const isActive = item.id === "explore"; return (
-                            <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}> 
+                            <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
                                 {t(item.label)}
@@ -442,7 +442,7 @@ export default function SchemeIntelligencePage() {
                         { key: "chat" as const, label: t("scheme.chat_ai"), icon: MessageCircle },
                         { key: "execution" as const, label: t("scheme.application_steps"), icon: BookOpenCheck }
                     ]).map((panel) => (
-                        <button key={panel.key} onClick={() => setActivePanel(panel.key)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all", activePanel === panel.key ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-30)] hover:text-[var(--text-50)]")}> 
+                        <button key={panel.key} onClick={() => setActivePanel(panel.key)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all", activePanel === panel.key ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-30)] hover:text-[var(--text-50)]")}>
                             <panel.icon className="w-3.5 h-3.5" />{panel.label}
                         </button>
                     ))}
@@ -617,11 +617,11 @@ export default function SchemeIntelligencePage() {
                         </ScrollArea>
                     </motion.div>
                 </div>
+                {/* Footer */}
+                <footer className="w-full text-center py-4 text-xs text-[var(--text-30)] bg-[var(--bg-page)] border-t border-[var(--border-4)]">
+                    {t("common.footer")}
+                </footer>
             </main>
-        {/* Footer */}
-        <footer className="w-full text-center py-4 text-xs text-[var(--text-30)] bg-[var(--bg-page)] border-t border-[var(--border-4)]">
-            {t("common.footer")}
-        </footer>
-    </div>
+        </div>
     );
 }

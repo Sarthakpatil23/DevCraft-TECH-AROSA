@@ -18,7 +18,7 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue>({
     lang: "en",
-    setLang: () => {},
+    setLang: () => { },
     t: (key: string, vars?: Record<string, string | number>) => key,
 });
 
@@ -73,6 +73,13 @@ const translations: Record<Language, Record<string, string>> = {
         "dashboard.no_evaluations": "No evaluations yet",
         "dashboard.upload_first": "Upload your first scheme PDF",
         "dashboard.explore_schemes": "Explore Schemes",
+        "dashboard.welcome": "Welcome back, {name}",
+        "dashboard.welcome_subtitle": "Here's your personalized eligibility dashboard",
+        "dashboard.search_placeholder": "Search schemes, documents...",
+        "dashboard.stats.schemes_matched": "Schemes Matched",
+        "dashboard.stats.evaluations_done": "Evaluations Done",
+        "dashboard.stats.docs_verified": "Docs Verified",
+        "dashboard.stats.pending_actions": "Pending Actions",
 
         // Upload Page
         "upload.title": "Upload Scheme",
@@ -93,6 +100,10 @@ const translations: Record<Language, Record<string, string>> = {
         "upload.analyze": "Analyze Scheme",
         "upload.view_results": "View Results",
         "upload.upload_another": "Upload Another",
+        "upload.click_to_upload": "Click to upload",
+        "upload.or_drag": "or drag and drop",
+        "upload.pdf_only": "PDF only · Max 10MB",
+        "upload.upload_analyze": "Upload & Analyze",
 
         // Explore Page
         "explore.title": "Explore Schemes",
@@ -102,6 +113,8 @@ const translations: Record<Language, Record<string, string>> = {
         "explore.all": "All",
         "explore.no_results": "No schemes match your search",
         "explore.try_different": "Try a different search term",
+        "explore.recommendations": "Personalized scheme recommendations",
+        "explore.view_all": "View All Schemes",
 
         // Evaluations Page
         "evaluations.title": "My Evaluations",
@@ -119,6 +132,7 @@ const translations: Record<Language, Record<string, string>> = {
         "evaluations.resume_chat": "Resume Chat",
         "evaluations.chat": "chat",
         "evaluations.chats": "chats",
+        "evaluations.view_history": "View Full History",
 
         // Profile Page
         "profile.title": "Profile",
@@ -127,6 +141,7 @@ const translations: Record<Language, Record<string, string>> = {
         "profile.education": "Education",
         "profile.social_financial": "Social & Financial",
         "profile.family": "Family Details",
+        "profile.family_details": "Family Details",
         "profile.save_changes": "Save Changes",
         "profile.first_name": "First Name",
         "profile.last_name": "Last Name",
@@ -143,6 +158,10 @@ const translations: Record<Language, Record<string, string>> = {
         "profile.disability": "Disability Status",
         "profile.area_type": "Area Type",
         "profile.family_members": "Family Members Count",
+        "profile.completion": "Your profile completion status",
+        "profile.incomplete": "Incomplete",
+        "profile.update": "Update Profile",
+        "profile.verified": "Verified",
 
         // Docs Page
         "docs.title": "Get Your Docs",
@@ -153,11 +172,13 @@ const translations: Record<Language, Record<string, string>> = {
         "docs.required_docs": "Required Documents",
         "docs.steps": "Steps",
         "docs.digilocker": "Available on DigiLocker",
+        "docs.progress": "Document Progress",
 
         // Vault Page
         "vault.title": "Document Vault",
         "vault.subtitle": "Securely store and manage your important documents",
         "vault.upload_doc": "Upload Document",
+        "vault.upload": "Upload Document",
         "vault.no_docs": "No documents found",
         "vault.no_docs_desc": "Upload your first document to get started",
         "vault.file_name": "File Name",
@@ -166,6 +187,27 @@ const translations: Record<Language, Record<string, string>> = {
         "vault.rename": "Rename",
         "vault.confirm_delete": "Are you sure you want to delete this document?",
         "vault.filter_all": "All",
+        "vault.filter": "Filter",
+        "vault.all": "All",
+        "vault.stats.total_docs": "Total Documents",
+        "vault.stats.categories_used": "Categories Used",
+        "vault.stats.storage_used": "Storage Used",
+        "vault.stats.recent_upload": "Recent Upload",
+        "vault.stats.none": "None yet",
+        "vault.categories.identity": "Identity",
+        "vault.categories.education": "Education",
+        "vault.categories.income": "Income & Financial",
+        "vault.categories.property": "Property & Land",
+        "vault.categories.certificates": "Certificates",
+        "vault.categories.other": "Other",
+        "vault.drop_here": "Drop your file here",
+        "vault.supported_types": "PDF, JPG, PNG, DOC, XLS supported",
+        "vault.empty": "No documents yet",
+        "vault.empty_desc": "Upload your first document to get started. All files are encrypted and securely stored.",
+        "vault.empty_category": "No documents in this category",
+        "vault.empty_category_desc": "Try uploading a document in this category or switch to All.",
+        "vault.upload_first": "Upload Your First Document",
+        "vault.or_drag": "or drag & drop",
 
         // Resources Page
         "resources.title": "Resources",
@@ -178,6 +220,15 @@ const translations: Record<Language, Record<string, string>> = {
         "resources.faq": "Frequently Asked Questions",
         "resources.read_more": "Read More",
         "resources.watch": "Watch",
+        "resources.read": "Read",
+        "resources.video_guides": "Video Guides",
+        "resources.guides_articles": "Guides & Articles",
+        "resources.browse_all": "Browse All Resources",
+        "resources.categories.all": "All",
+        "resources.categories.scholarships": "Scholarships",
+        "resources.categories.application": "Application Tips",
+        "resources.categories.eligibility": "Eligibility",
+        "resources.categories.walkthrough": "Walkthroughs",
 
         // Notifications Page
         "notifications.title": "Notifications",
@@ -208,6 +259,9 @@ const translations: Record<Language, Record<string, string>> = {
         "scheme.met": "Met",
         "scheme.not_met": "Not Met",
         "scheme.missing": "Missing Info",
+        "scheme.why_not_eligible": "Why am I not eligible?",
+        "scheme.required_documents": "What documents do I need?",
+        "scheme.improve_eligibility": "How can I improve my eligibility?",
 
         // Landing Page
         "landing.home": "Home",
@@ -267,6 +321,13 @@ const translations: Record<Language, Record<string, string>> = {
         "dashboard.no_evaluations": "अभी तक कोई मूल्यांकन नहीं",
         "dashboard.upload_first": "अपनी पहली योजना PDF अपलोड करें",
         "dashboard.explore_schemes": "योजनाएँ खोजें",
+        "dashboard.welcome": "वापस स्वागत है, {name}",
+        "dashboard.welcome_subtitle": "यह आपका व्यक्तिगत पात्रता डैशबोर्ड है",
+        "dashboard.search_placeholder": "योजनाएँ, दस्तावेज़ खोजें...",
+        "dashboard.stats.schemes_matched": "मेल खाती योजनाएँ",
+        "dashboard.stats.evaluations_done": "मूल्यांकन पूर्ण",
+        "dashboard.stats.docs_verified": "दस्तावेज़ सत्यापित",
+        "dashboard.stats.pending_actions": "लंबित कार्य",
 
         // Upload Page
         "upload.title": "योजना अपलोड करें",
@@ -287,6 +348,10 @@ const translations: Record<Language, Record<string, string>> = {
         "upload.analyze": "योजना का विश्लेषण करें",
         "upload.view_results": "परिणाम देखें",
         "upload.upload_another": "एक और अपलोड करें",
+        "upload.click_to_upload": "अपलोड करने के लिए क्लिक करें",
+        "upload.or_drag": "या खींचें और छोड़ें",
+        "upload.pdf_only": "केवल PDF · अधिकतम 10MB",
+        "upload.upload_analyze": "अपलोड और विश्लेषण करें",
 
         // Explore Page
         "explore.title": "योजनाएँ खोजें",
@@ -296,6 +361,8 @@ const translations: Record<Language, Record<string, string>> = {
         "explore.all": "सभी",
         "explore.no_results": "आपकी खोज से कोई योजना मेल नहीं खाती",
         "explore.try_different": "कोई अलग खोज शब्द आज़माएं",
+        "explore.recommendations": "व्यक्तिगत योजना सुझाव",
+        "explore.view_all": "सभी योजनाएँ देखें",
 
         // Evaluations Page
         "evaluations.title": "मेरे मूल्यांकन",
@@ -313,6 +380,7 @@ const translations: Record<Language, Record<string, string>> = {
         "evaluations.resume_chat": "चैट जारी रखें",
         "evaluations.chat": "चैट",
         "evaluations.chats": "चैट",
+        "evaluations.view_history": "पूरा इतिहास देखें",
 
         // Profile Page
         "profile.title": "प्रोफ़ाइल",
@@ -321,6 +389,7 @@ const translations: Record<Language, Record<string, string>> = {
         "profile.education": "शिक्षा",
         "profile.social_financial": "सामाजिक और वित्तीय",
         "profile.family": "परिवार विवरण",
+        "profile.family_details": "परिवार विवरण",
         "profile.save_changes": "परिवर्तन सहेजें",
         "profile.first_name": "पहला नाम",
         "profile.last_name": "उपनाम",
@@ -337,6 +406,10 @@ const translations: Record<Language, Record<string, string>> = {
         "profile.disability": "विकलांगता स्थिति",
         "profile.area_type": "क्षेत्र प्रकार",
         "profile.family_members": "परिवार के सदस्यों की संख्या",
+        "profile.completion": "आपकी प्रोफ़ाइल पूर्णता स्थिति",
+        "profile.incomplete": "अधूरा",
+        "profile.update": "प्रोफ़ाइल अपडेट करें",
+        "profile.verified": "सत्यापित",
 
         // Docs Page
         "docs.title": "दस्तावेज़ प्राप्त करें",
@@ -347,6 +420,7 @@ const translations: Record<Language, Record<string, string>> = {
         "docs.required_docs": "आवश्यक दस्तावेज़",
         "docs.steps": "चरण",
         "docs.digilocker": "डिजिलॉकर पर उपलब्ध",
+        "docs.progress": "दस्तावेज़ प्रगति",
 
         // Vault Page
         "vault.title": "दस्तावेज़ वॉल्ट",
@@ -360,6 +434,28 @@ const translations: Record<Language, Record<string, string>> = {
         "vault.rename": "नाम बदलें",
         "vault.confirm_delete": "क्या आप इस दस्तावेज़ को हटाना चाहते हैं?",
         "vault.filter_all": "सभी",
+        "vault.filter": "फ़िल्टर",
+        "vault.all": "सभी",
+        "vault.upload": "दस्तावेज़ अपलोड करें",
+        "vault.stats.total_docs": "कुल दस्तावेज़",
+        "vault.stats.categories_used": "उपयोग की गई श्रेणियाँ",
+        "vault.stats.storage_used": "उपयोग किया गया स्थान",
+        "vault.stats.recent_upload": "हालिया अपलोड",
+        "vault.stats.none": "अभी कोई नहीं",
+        "vault.categories.identity": "पहचान",
+        "vault.categories.education": "शिक्षा",
+        "vault.categories.income": "आय और वित्त",
+        "vault.categories.property": "संपत्ति और भूमि",
+        "vault.categories.certificates": "प्रमाणपत्र",
+        "vault.categories.other": "अन्य",
+        "vault.drop_here": "यहाँ फ़ाइल छोड़ें",
+        "vault.supported_types": "PDF, JPG, PNG, DOC, XLS समर्थित",
+        "vault.empty": "अभी कोई दस्तावेज़ नहीं",
+        "vault.empty_desc": "शुरू करने के लिए अपना पहला दस्तावेज़ अपलोड करें।",
+        "vault.empty_category": "इस श्रेणी में कोई दस्तावेज़ नहीं",
+        "vault.empty_category_desc": "इस श्रेणी में कोई दस्तावेज़ अपलोड करें या सभी पर जाएं।",
+        "vault.upload_first": "अपना पहला दस्तावेज़ अपलोड करें",
+        "vault.or_drag": "या खींचें और छोड़ें",
 
         // Resources Page
         "resources.title": "संसाधन",
@@ -372,6 +468,15 @@ const translations: Record<Language, Record<string, string>> = {
         "resources.faq": "अक्सर पूछे जाने वाले प्रश्न",
         "resources.read_more": "और पढ़ें",
         "resources.watch": "देखें",
+        "resources.read": "पढ़ें",
+        "resources.video_guides": "वीडियो गाइड",
+        "resources.guides_articles": "गाइड और लेख",
+        "resources.browse_all": "सभी संसाधन देखें",
+        "resources.categories.all": "सभी",
+        "resources.categories.scholarships": "छात्रवृत्तियाँ",
+        "resources.categories.application": "आवेदन टिप्स",
+        "resources.categories.eligibility": "पात्रता",
+        "resources.categories.walkthrough": "वॉकथ्रू",
 
         // Notifications Page
         "notifications.title": "सूचनाएँ",
@@ -402,6 +507,9 @@ const translations: Record<Language, Record<string, string>> = {
         "scheme.met": "पूरा",
         "scheme.not_met": "अपूर्ण",
         "scheme.missing": "जानकारी उपलब्ध नहीं",
+        "scheme.why_not_eligible": "मैं पात्र क्यों नहीं हूँ?",
+        "scheme.required_documents": "मुझे कौन से दस्तावेज़ चाहिए?",
+        "scheme.improve_eligibility": "मैं अपनी पात्रता कैसे सुधारूँ?",
 
         // Landing Page
         "landing.home": "होम",
@@ -461,6 +569,13 @@ const translations: Record<Language, Record<string, string>> = {
         "dashboard.no_evaluations": "अद्याप कोणतेही मूल्यांकन नाही",
         "dashboard.upload_first": "तुमची पहिली योजना PDF अपलोड करा",
         "dashboard.explore_schemes": "योजना शोधा",
+        "dashboard.welcome": "पुन्हा स्वागत, {name}",
+        "dashboard.welcome_subtitle": "हे तुमचे वैयक्तिक पात्रता डॅशबोर्ड आहे",
+        "dashboard.search_placeholder": "योजना, कागदपत्रे शोधा...",
+        "dashboard.stats.schemes_matched": "जुळणा-या योजना",
+        "dashboard.stats.evaluations_done": "मूल्यांकन पूर्ण",
+        "dashboard.stats.docs_verified": "कागदपत्रे सत्यापित",
+        "dashboard.stats.pending_actions": "प्रलंबित कृती",
 
         // Upload Page
         "upload.title": "योजना अपलोड करा",
@@ -481,6 +596,10 @@ const translations: Record<Language, Record<string, string>> = {
         "upload.analyze": "योजनेचे विश्लेषण करा",
         "upload.view_results": "निकाल पहा",
         "upload.upload_another": "आणखी एक अपलोड करा",
+        "upload.click_to_upload": "अपलोड करण्यासाठी क्लिक करा",
+        "upload.or_drag": "किंवा ओढा आणि सोडा",
+        "upload.pdf_only": "फक्त PDF · कमाल 10MB",
+        "upload.upload_analyze": "अपलोड आणि विश्लेषण करा",
 
         // Explore Page
         "explore.title": "योजना शोधा",
@@ -490,6 +609,8 @@ const translations: Record<Language, Record<string, string>> = {
         "explore.all": "सर्व",
         "explore.no_results": "तुमच्या शोधाशी कोणतीही योजना जुळत नाही",
         "explore.try_different": "वेगळा शोध शब्द वापरून पहा",
+        "explore.recommendations": "वैयक्तिक योजना शिफारशी",
+        "explore.view_all": "सर्व योजना पहा",
 
         // Evaluations Page
         "evaluations.title": "माझे मूल्यांकन",
@@ -507,6 +628,7 @@ const translations: Record<Language, Record<string, string>> = {
         "evaluations.resume_chat": "चॅट सुरू ठेवा",
         "evaluations.chat": "चॅट",
         "evaluations.chats": "चॅट",
+        "evaluations.view_history": "संपूर्ण इतिहास पहा",
 
         // Profile Page
         "profile.title": "प्रोफाइल",
@@ -531,6 +653,11 @@ const translations: Record<Language, Record<string, string>> = {
         "profile.disability": "अपंगत्व स्थिती",
         "profile.area_type": "क्षेत्र प्रकार",
         "profile.family_members": "कुटुंबातील सदस्य संख्या",
+        "profile.family_details": "कुटुंब तपशील",
+        "profile.completion": "तुमची प्रोफाइल पूर्णता स्थिती",
+        "profile.incomplete": "अपूर्ण",
+        "profile.update": "प्रोफाइल अपडेट करा",
+        "profile.verified": "सत्यापित",
 
         // Docs Page
         "docs.title": "कागदपत्रे मिळवा",
@@ -541,6 +668,7 @@ const translations: Record<Language, Record<string, string>> = {
         "docs.required_docs": "आवश्यक कागदपत्रे",
         "docs.steps": "चरण",
         "docs.digilocker": "डिजिलॉकरवर उपलब्ध",
+        "docs.progress": "कागदपत्रे प्रगती",
 
         // Vault Page
         "vault.title": "दस्तऐवज व्हॉल्ट",
@@ -554,6 +682,28 @@ const translations: Record<Language, Record<string, string>> = {
         "vault.rename": "नाव बदला",
         "vault.confirm_delete": "तुम्हाला हा दस्तऐवज हटवायचा आहे का?",
         "vault.filter_all": "सर्व",
+        "vault.filter": "फिल्टर",
+        "vault.all": "सर्व",
+        "vault.upload": "दस्तऐवज अपलोड करा",
+        "vault.stats.total_docs": "एकूण दस्तऐवज",
+        "vault.stats.categories_used": "वापरलेल्या श्रेणी",
+        "vault.stats.storage_used": "वापरलेली जागा",
+        "vault.stats.recent_upload": "अलीकडे अपलोड",
+        "vault.stats.none": "अजून नाही",
+        "vault.categories.identity": "ओळख",
+        "vault.categories.education": "शिक्षण",
+        "vault.categories.income": "उत्पन्न आणि आर्थिक",
+        "vault.categories.property": "संपत्ती आणि जमीन",
+        "vault.categories.certificates": "प्रमाणपत्रे",
+        "vault.categories.other": "इतर",
+        "vault.drop_here": "इथे फाइल टाका",
+        "vault.supported_types": "PDF, JPG, PNG, DOC, XLS समर्थित",
+        "vault.empty": "अजून कोणतेही दस्तऐवज नाहीत",
+        "vault.empty_desc": "सुरुवात करण्यासाठी तुमचा पहिला दस्तऐवज अपलोड करा.",
+        "vault.empty_category": "या श्रेणीमध्ये कोणतेही दस्तऐवज नाहीत",
+        "vault.empty_category_desc": "या श्रेणीमध्ये दस्तऐवज अपलोड करा किंवा सर्व पहा.",
+        "vault.upload_first": "तुमचा पहिला दस्तऐवज अपलोड करा",
+        "vault.or_drag": "किंवा ओढा आणि सोडा",
 
         // Resources Page
         "resources.title": "संसाधने",
@@ -566,6 +716,15 @@ const translations: Record<Language, Record<string, string>> = {
         "resources.faq": "वारंवार विचारले जाणारे प्रश्न",
         "resources.read_more": "अधिक वाचा",
         "resources.watch": "पहा",
+        "resources.read": "वाचा",
+        "resources.video_guides": "व्हिडिओ मार्गदर्शक",
+        "resources.guides_articles": "मार्गदर्शक आणि लेख",
+        "resources.browse_all": "सर्व संसाधने पहा",
+        "resources.categories.all": "सर्व",
+        "resources.categories.scholarships": "शिष्यवृत्ती",
+        "resources.categories.application": "अर्ज टिप्स",
+        "resources.categories.eligibility": "पात्रता",
+        "resources.categories.walkthrough": "वॉकथ्रू",
 
         // Notifications Page
         "notifications.title": "सूचना",
@@ -596,6 +755,9 @@ const translations: Record<Language, Record<string, string>> = {
         "scheme.met": "पूर्ण",
         "scheme.not_met": "अपूर्ण",
         "scheme.missing": "माहिती उपलब्ध नाही",
+        "scheme.why_not_eligible": "मी पात्र का नाही?",
+        "scheme.required_documents": "मला कोणती कागदपत्रे लागतात?",
+        "scheme.improve_eligibility": "मी पात्रता कशी सुधारू शकतो?",
 
         // Landing Page
         "landing.home": "मुख्यपृष्ठ",
