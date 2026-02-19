@@ -45,17 +45,20 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
+
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Processing Steps ───────────────────────────────────────────────
@@ -234,11 +237,15 @@ function StepIndicator({
 // ═══════════════════════════════════════════════════════════════════
 // UPLOAD CUSTOM SCHEME PAGE
 // ═══════════════════════════════════════════════════════════════════
+
 export default function UploadSchemePage() {
     const router = useRouter();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const profileCompletion = 80;
+
+    // ── Language ─────────────────────────────────────────────────────
+    const { t } = useLanguage();
 
     // ── State ─────────────────────────────────────────────────────────
     const [pageState, setPageState] = useState<PageState>("upload");
@@ -250,10 +257,17 @@ export default function UploadSchemePage() {
     const [saveToEvaluations, setSaveToEvaluations] = useState(true);
     const [errorMessage, setErrorMessage] = useState("");
     const [language, setLanguage] = useState("English");
+    const [userName, setUserName] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", {
+            headers: { Authorization: `Bearer ${token}` },
+        }).then(r => r.json()).then(data => {
+            const u = data.user;
+            setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || "");
+        }).catch(() => {});
     }, [router]);
 
     // ── File Handlers ─────────────────────────────────────────────────
@@ -432,11 +446,11 @@ export default function UploadSchemePage() {
                     <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-400">
-                            DigiLocker Connected
+                            {t("sidebar.digilocker")}
                         </span>
                     </div>
                     <p className="text-[10px] text-[var(--text-30)] mt-1">
-                        Documents verified & secure
+                        {t("sidebar.digilocker_desc")}
                     </p>
                 </div>
 
@@ -475,7 +489,7 @@ export default function UploadSchemePage() {
                                     <Icon className="w-[18px] h-[18px]" />
                                     {item.id === "notifications" && <NotifBadge count={2} />}
                                 </div>
-                                {item.label}
+                                {t(item.label)}
                                 {item.id === "profile" && (
                                     <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {profileCompletion}%
@@ -493,7 +507,7 @@ export default function UploadSchemePage() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
                     >
                         <LogOut className="w-[18px] h-[18px]" />
-                        Logout
+                        {t("sidebar.logout")}
                     </button>
                 </div>
             </aside>
@@ -518,13 +532,14 @@ export default function UploadSchemePage() {
                                 onClick={() => router.push("/dashboard")}
                                 className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm transition-colors"
                             >
-                                Dashboard
+                                {t("common.dashboard")}
                             </button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
                             <span className="text-sm text-[var(--text-primary)] font-medium">
-                                Upload Scheme
+                                {t("upload.title")}
                             </span>
                         </div>
+                        <LanguageSwitcher compact />
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -539,11 +554,11 @@ export default function UploadSchemePage() {
                         </Button>
                         <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
-                                R
+                                {userName ? userName.charAt(0).toUpperCase() : "?"}
                             </div>
                             <div className="hidden md:block">
                                 <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">
-                                    Rohit Sharma
+                                    {userName || "Loading..."}
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
@@ -568,7 +583,7 @@ export default function UploadSchemePage() {
                             <Upload className="w-6 h-6 text-[var(--text-50)]" />
                         </div>
                         <h1 className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)]">
-                            Upload Custom Scheme
+                            {t("upload.title")}
                         </h1>
                         <p className="text-sm text-[var(--text-35)] mt-2 max-w-md mx-auto leading-relaxed">
                             Upload any scheme PDF to check your eligibility instantly.
@@ -1096,7 +1111,7 @@ export default function UploadSchemePage() {
                         className="text-center py-10 border-t border-[var(--border-4)] mt-12 relative z-10"
                     >
                         <p className="text-xs text-[var(--text-15)]">
-                            © 2026 Eligify · AI-Powered Policy Decision Engine
+                            {t("common.footer")}
                         </p>
                     </motion.div>
                 </div>

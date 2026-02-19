@@ -1,0 +1,657 @@
+"use client";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+
+export type Language = "en" | "hi" | "mr";
+
+export const LANGUAGE_LABELS: Record<Language, string> = {
+    en: "English",
+    hi: "हिन्दी",
+    mr: "मराठी",
+};
+
+
+interface LanguageContextValue {
+    lang: Language;
+    setLang: (l: Language) => void;
+    t: (key: string, vars?: Record<string, string | number>) => string;
+}
+
+const LanguageContext = createContext<LanguageContextValue>({
+    lang: "en",
+    setLang: () => {},
+    t: (key: string, vars?: Record<string, string | number>) => key,
+});
+
+// ─── Translation Dictionaries ─────────────────────────────────────
+const translations: Record<Language, Record<string, string>> = {
+    en: {
+        // Sidebar
+        "sidebar.dashboard": "Dashboard",
+        "sidebar.profile": "Profile",
+        "sidebar.explore": "Explore Schemes",
+        "sidebar.upload": "Upload Scheme",
+        "sidebar.evaluations": "My Evaluations",
+        "sidebar.docs": "Get Your Docs",
+        "sidebar.vault": "Document Vault",
+        "sidebar.resources": "Resources",
+        "sidebar.notifications": "Notifications",
+        "sidebar.logout": "Logout",
+        "sidebar.digilocker": "DigiLocker Connected",
+        "sidebar.digilocker_desc": "Documents verified & secure",
+        "sidebar.light_mode": "Light Mode",
+        "sidebar.dark_mode": "Dark Mode",
+
+        // Common
+        "common.dashboard": "Dashboard",
+        "common.search": "Search",
+        "common.upload": "Upload",
+        "common.download": "Download",
+        "common.delete": "Delete",
+        "common.cancel": "Cancel",
+        "common.save": "Save",
+        "common.edit": "Edit",
+        "common.back": "Back",
+        "common.loading": "Loading...",
+        "common.verified": "Verified",
+        "common.footer": "© 2026 Eligify · AI-Powered Policy Decision Engine",
+        "common.eligible": "Eligible",
+        "common.partial": "Partial Match",
+        "common.not_eligible": "Not Eligible",
+        "common.uploaded": "Uploaded",
+        "common.preloaded": "Preloaded",
+        "common.total": "Total",
+        "common.view_details": "View Details",
+        "common.apply_now": "Apply Now",
+        "common.see_all": "See All",
+        "common.welcome_back": "Welcome Back",
+
+        // Dashboard
+        "dashboard.profile_completion": "Profile Completion",
+        "dashboard.complete_profile": "Complete your profile",
+        "dashboard.recent_evaluations": "Recent Evaluations",
+        "dashboard.quick_actions": "Quick Actions",
+        "dashboard.no_evaluations": "No evaluations yet",
+        "dashboard.upload_first": "Upload your first scheme PDF",
+        "dashboard.explore_schemes": "Explore Schemes",
+
+        // Upload Page
+        "upload.title": "Upload Scheme",
+        "upload.subtitle": "Upload a government scheme rulebook PDF and get AI-powered eligibility evaluation",
+        "upload.drag_drop": "Drag & drop your PDF here",
+        "upload.or_browse": "or browse files",
+        "upload.max_size": "Max file size: 10MB · PDF only",
+        "upload.processing": "Processing...",
+        "upload.extracting": "Extracting Scheme Text",
+        "upload.extracting_desc": "Reading and parsing the uploaded document...",
+        "upload.identifying": "Identifying Eligibility Rules",
+        "upload.identifying_desc": "Detecting conditions, criteria, and requirements...",
+        "upload.evaluating": "Evaluating Against Your Profile",
+        "upload.evaluating_desc": "Matching your profile data to scheme criteria...",
+        "upload.language": "Language",
+        "upload.scheme_name": "Scheme Name",
+        "upload.save_evaluations": "Save to Evaluations",
+        "upload.analyze": "Analyze Scheme",
+        "upload.view_results": "View Results",
+        "upload.upload_another": "Upload Another",
+
+        // Explore Page
+        "explore.title": "Explore Schemes",
+        "explore.subtitle": "Discover government schemes you're eligible for",
+        "explore.search_placeholder": "Search schemes by name, category, or benefit...",
+        "explore.recommended": "Recommended",
+        "explore.all": "All",
+        "explore.no_results": "No schemes match your search",
+        "explore.try_different": "Try a different search term",
+
+        // Evaluations Page
+        "evaluations.title": "My Evaluations",
+        "evaluations.subtitle": "Your previously checked schemes and eligibility results",
+        "evaluations.search_placeholder": "Search evaluated schemes...",
+        "evaluations.sort_latest": "Latest Checked",
+        "evaluations.sort_match": "Highest Match",
+        "evaluations.sort_name": "Name A–Z",
+        "evaluations.no_results": "No matching evaluations",
+        "evaluations.no_schemes": "No schemes evaluated yet",
+        "evaluations.no_schemes_desc": "Upload a government scheme rulebook PDF to get your first AI-powered eligibility evaluation.",
+        "evaluations.try_different": "Try a different search term",
+        "evaluations.clear_search": "Clear Search",
+        "evaluations.upload_pdf": "Upload Scheme PDF",
+        "evaluations.resume_chat": "Resume Chat",
+        "evaluations.chat": "chat",
+        "evaluations.chats": "chats",
+
+        // Profile Page
+        "profile.title": "Profile",
+        "profile.subtitle": "Manage your personal information for accurate eligibility checks",
+        "profile.basic_info": "Basic Info",
+        "profile.education": "Education",
+        "profile.social_financial": "Social & Financial",
+        "profile.family": "Family Details",
+        "profile.save_changes": "Save Changes",
+        "profile.first_name": "First Name",
+        "profile.last_name": "Last Name",
+        "profile.email": "Email",
+        "profile.state": "State",
+        "profile.gender": "Gender",
+        "profile.dob": "Date of Birth",
+        "profile.occupation": "Occupation",
+        "profile.education_level": "Education Level",
+        "profile.marks": "Marks / Percentage",
+        "profile.category": "Category (SC/ST/OBC/General)",
+        "profile.annual_income": "Annual Income (₹)",
+        "profile.minority": "Minority Status",
+        "profile.disability": "Disability Status",
+        "profile.area_type": "Area Type",
+        "profile.family_members": "Family Members Count",
+
+        // Docs Page
+        "docs.title": "Get Your Docs",
+        "docs.subtitle": "Step-by-step guides to obtain essential documents for scheme applications",
+        "docs.how_to_get": "How to Get It",
+        "docs.where_to_apply": "Where to Apply",
+        "docs.processing_time": "Processing Time",
+        "docs.required_docs": "Required Documents",
+        "docs.steps": "Steps",
+        "docs.digilocker": "Available on DigiLocker",
+
+        // Vault Page
+        "vault.title": "Document Vault",
+        "vault.subtitle": "Securely store and manage your important documents",
+        "vault.upload_doc": "Upload Document",
+        "vault.no_docs": "No documents found",
+        "vault.no_docs_desc": "Upload your first document to get started",
+        "vault.file_name": "File Name",
+        "vault.category": "Category",
+        "vault.notes": "Notes (optional)",
+        "vault.rename": "Rename",
+        "vault.confirm_delete": "Are you sure you want to delete this document?",
+        "vault.filter_all": "All",
+
+        // Resources Page
+        "resources.title": "Resources",
+        "resources.subtitle": "Helpful guides, videos, and FAQs about government schemes",
+        "resources.all": "All",
+        "resources.scholarships": "Scholarships",
+        "resources.tips": "Application Tips",
+        "resources.eligibility": "Eligibility",
+        "resources.walkthroughs": "Walkthroughs",
+        "resources.faq": "Frequently Asked Questions",
+        "resources.read_more": "Read More",
+        "resources.watch": "Watch",
+
+        // Notifications Page
+        "notifications.title": "Notifications",
+        "notifications.subtitle": "Stay updated with scheme deadlines, matches, and reminders",
+        "notifications.all": "All",
+        "notifications.unread": "Unread",
+        "notifications.deadlines": "Deadlines",
+        "notifications.matches": "Matches",
+        "notifications.mark_all_read": "Mark All Read",
+        "notifications.no_notifications": "No notifications",
+
+        // Scheme Detail Page
+        "scheme.eligibility_criteria": "Eligibility Criteria",
+        "scheme.required_docs": "Required Documents",
+        "scheme.application_steps": "Application Process",
+        "scheme.benefits": "Scheme Benefits",
+        "scheme.chat_ai": "Chat with AI",
+        "scheme.ask_question": "Ask a question about this scheme...",
+        "scheme.save_analysis": "Save Analysis",
+        "scheme.saved": "Saved",
+        "scheme.saving": "Saving...",
+        "scheme.max_benefit": "Max Benefit",
+        "scheme.deadline": "Deadline",
+        "scheme.ministry": "Ministry",
+        "scheme.category": "Category",
+        "scheme.official_portal": "Official Portal",
+        "scheme.what_if": "What-If Analysis",
+        "scheme.met": "Met",
+        "scheme.not_met": "Not Met",
+        "scheme.missing": "Missing Info",
+
+        // Landing Page
+        "landing.home": "Home",
+        "landing.solutions": "Solutions",
+        "landing.schemes": "Schemes",
+        "landing.about": "About",
+        "landing.testimonials": "Testimonials",
+        "landing.get_started": "Get Started",
+        "landing.login": "Login with Google",
+    },
+    hi: {
+        // Sidebar
+        "sidebar.dashboard": "डैशबोर्ड",
+        "sidebar.profile": "प्रोफ़ाइल",
+        "sidebar.explore": "योजनाएँ खोजें",
+        "sidebar.upload": "योजना अपलोड करें",
+        "sidebar.evaluations": "मेरे मूल्यांकन",
+        "sidebar.docs": "दस्तावेज़ प्राप्त करें",
+        "sidebar.vault": "दस्तावेज़ वॉल्ट",
+        "sidebar.resources": "संसाधन",
+        "sidebar.notifications": "सूचनाएँ",
+        "sidebar.logout": "लॉग आउट",
+        "sidebar.digilocker": "डिजिलॉकर जुड़ा है",
+        "sidebar.digilocker_desc": "दस्तावेज़ सत्यापित और सुरक्षित",
+        "sidebar.light_mode": "लाइट मोड",
+        "sidebar.dark_mode": "डार्क मोड",
+
+        // Common
+        "common.dashboard": "डैशबोर्ड",
+        "common.search": "खोजें",
+        "common.upload": "अपलोड",
+        "common.download": "डाउनलोड",
+        "common.delete": "हटाएं",
+        "common.cancel": "रद्द करें",
+        "common.save": "सेव करें",
+        "common.edit": "संपादित करें",
+        "common.back": "वापस",
+        "common.loading": "लोड हो रहा है...",
+        "common.verified": "सत्यापित",
+        "common.footer": "© 2026 Eligify · AI-संचालित नीति निर्णय इंजन",
+        "common.eligible": "पात्र",
+        "common.partial": "आंशिक मिलान",
+        "common.not_eligible": "अपात्र",
+        "common.uploaded": "अपलोड किया गया",
+        "common.preloaded": "पूर्व-लोड",
+        "common.total": "कुल",
+        "common.view_details": "विवरण देखें",
+        "common.apply_now": "अभी आवेदन करें",
+        "common.see_all": "सभी देखें",
+        "common.welcome_back": "वापसी पर स्वागत है",
+
+        // Dashboard
+        "dashboard.profile_completion": "प्रोफ़ाइल पूर्णता",
+        "dashboard.complete_profile": "अपनी प्रोफ़ाइल पूरी करें",
+        "dashboard.recent_evaluations": "हालिया मूल्यांकन",
+        "dashboard.quick_actions": "त्वरित कार्य",
+        "dashboard.no_evaluations": "अभी तक कोई मूल्यांकन नहीं",
+        "dashboard.upload_first": "अपनी पहली योजना PDF अपलोड करें",
+        "dashboard.explore_schemes": "योजनाएँ खोजें",
+
+        // Upload Page
+        "upload.title": "योजना अपलोड करें",
+        "upload.subtitle": "सरकारी योजना PDF अपलोड करें और AI-संचालित पात्रता मूल्यांकन प्राप्त करें",
+        "upload.drag_drop": "अपनी PDF यहाँ ड्रैग और ड्रॉप करें",
+        "upload.or_browse": "या फाइलें ब्राउज़ करें",
+        "upload.max_size": "अधिकतम फ़ाइल आकार: 10MB · केवल PDF",
+        "upload.processing": "प्रोसेसिंग...",
+        "upload.extracting": "योजना टेक्स्ट निकाला जा रहा है",
+        "upload.extracting_desc": "अपलोड किए गए दस्तावेज़ को पढ़ा और पार्स किया जा रहा है...",
+        "upload.identifying": "पात्रता नियमों की पहचान",
+        "upload.identifying_desc": "शर्तें, मापदंड और आवश्यकताओं का पता लगाया जा रहा है...",
+        "upload.evaluating": "आपकी प्रोफ़ाइल से मिलान",
+        "upload.evaluating_desc": "आपकी प्रोफ़ाइल डेटा को योजना मापदंडों से मिलाया जा रहा है...",
+        "upload.language": "भाषा",
+        "upload.scheme_name": "योजना का नाम",
+        "upload.save_evaluations": "मूल्यांकन में सहेजें",
+        "upload.analyze": "योजना का विश्लेषण करें",
+        "upload.view_results": "परिणाम देखें",
+        "upload.upload_another": "एक और अपलोड करें",
+
+        // Explore Page
+        "explore.title": "योजनाएँ खोजें",
+        "explore.subtitle": "उन सरकारी योजनाओं की खोज करें जिनके लिए आप पात्र हैं",
+        "explore.search_placeholder": "नाम, श्रेणी या लाभ से योजनाएँ खोजें...",
+        "explore.recommended": "अनुशंसित",
+        "explore.all": "सभी",
+        "explore.no_results": "आपकी खोज से कोई योजना मेल नहीं खाती",
+        "explore.try_different": "कोई अलग खोज शब्द आज़माएं",
+
+        // Evaluations Page
+        "evaluations.title": "मेरे मूल्यांकन",
+        "evaluations.subtitle": "आपकी पहले जाँची गई योजनाएँ और पात्रता परिणाम",
+        "evaluations.search_placeholder": "मूल्यांकित योजनाएँ खोजें...",
+        "evaluations.sort_latest": "नवीनतम जाँच",
+        "evaluations.sort_match": "सर्वोच्च मिलान",
+        "evaluations.sort_name": "नाम A–Z",
+        "evaluations.no_results": "कोई मेल खाने वाले मूल्यांकन नहीं",
+        "evaluations.no_schemes": "अभी तक कोई योजना मूल्यांकित नहीं",
+        "evaluations.no_schemes_desc": "अपना पहला AI-संचालित पात्रता मूल्यांकन प्राप्त करने के लिए सरकारी योजना PDF अपलोड करें।",
+        "evaluations.try_different": "कोई अलग खोज शब्द आज़माएं",
+        "evaluations.clear_search": "खोज साफ़ करें",
+        "evaluations.upload_pdf": "योजना PDF अपलोड करें",
+        "evaluations.resume_chat": "चैट जारी रखें",
+        "evaluations.chat": "चैट",
+        "evaluations.chats": "चैट",
+
+        // Profile Page
+        "profile.title": "प्रोफ़ाइल",
+        "profile.subtitle": "सटीक पात्रता जाँच के लिए अपनी व्यक्तिगत जानकारी प्रबंधित करें",
+        "profile.basic_info": "मूल जानकारी",
+        "profile.education": "शिक्षा",
+        "profile.social_financial": "सामाजिक और वित्तीय",
+        "profile.family": "परिवार विवरण",
+        "profile.save_changes": "परिवर्तन सहेजें",
+        "profile.first_name": "पहला नाम",
+        "profile.last_name": "उपनाम",
+        "profile.email": "ईमेल",
+        "profile.state": "राज्य",
+        "profile.gender": "लिंग",
+        "profile.dob": "जन्म तिथि",
+        "profile.occupation": "व्यवसाय",
+        "profile.education_level": "शिक्षा स्तर",
+        "profile.marks": "अंक / प्रतिशत",
+        "profile.category": "श्रेणी (SC/ST/OBC/सामान्य)",
+        "profile.annual_income": "वार्षिक आय (₹)",
+        "profile.minority": "अल्पसंख्यक स्थिति",
+        "profile.disability": "विकलांगता स्थिति",
+        "profile.area_type": "क्षेत्र प्रकार",
+        "profile.family_members": "परिवार के सदस्यों की संख्या",
+
+        // Docs Page
+        "docs.title": "दस्तावेज़ प्राप्त करें",
+        "docs.subtitle": "योजना आवेदनों के लिए आवश्यक दस्तावेज़ प्राप्त करने की चरण-दर-चरण मार्गदर्शिका",
+        "docs.how_to_get": "कैसे प्राप्त करें",
+        "docs.where_to_apply": "कहाँ आवेदन करें",
+        "docs.processing_time": "प्रोसेसिंग समय",
+        "docs.required_docs": "आवश्यक दस्तावेज़",
+        "docs.steps": "चरण",
+        "docs.digilocker": "डिजिलॉकर पर उपलब्ध",
+
+        // Vault Page
+        "vault.title": "दस्तावेज़ वॉल्ट",
+        "vault.subtitle": "अपने महत्वपूर्ण दस्तावेज़ सुरक्षित रूप से संग्रहीत और प्रबंधित करें",
+        "vault.upload_doc": "दस्तावेज़ अपलोड करें",
+        "vault.no_docs": "कोई दस्तावेज़ नहीं मिले",
+        "vault.no_docs_desc": "शुरू करने के लिए अपना पहला दस्तावेज़ अपलोड करें",
+        "vault.file_name": "फ़ाइल का नाम",
+        "vault.category": "श्रेणी",
+        "vault.notes": "नोट्स (वैकल्पिक)",
+        "vault.rename": "नाम बदलें",
+        "vault.confirm_delete": "क्या आप इस दस्तावेज़ को हटाना चाहते हैं?",
+        "vault.filter_all": "सभी",
+
+        // Resources Page
+        "resources.title": "संसाधन",
+        "resources.subtitle": "सरकारी योजनाओं के बारे में उपयोगी मार्गदर्शिकाएँ, वीडियो और FAQ",
+        "resources.all": "सभी",
+        "resources.scholarships": "छात्रवृत्तियाँ",
+        "resources.tips": "आवेदन टिप्स",
+        "resources.eligibility": "पात्रता",
+        "resources.walkthroughs": "वॉकथ्रू",
+        "resources.faq": "अक्सर पूछे जाने वाले प्रश्न",
+        "resources.read_more": "और पढ़ें",
+        "resources.watch": "देखें",
+
+        // Notifications Page
+        "notifications.title": "सूचनाएँ",
+        "notifications.subtitle": "योजना की समय-सीमा, मिलान और रिमाइंडर के बारे में अपडेट रहें",
+        "notifications.all": "सभी",
+        "notifications.unread": "अपठित",
+        "notifications.deadlines": "समय-सीमा",
+        "notifications.matches": "मिलान",
+        "notifications.mark_all_read": "सभी पढ़ा मार्क करें",
+        "notifications.no_notifications": "कोई सूचना नहीं",
+
+        // Scheme Detail Page
+        "scheme.eligibility_criteria": "पात्रता मापदंड",
+        "scheme.required_docs": "आवश्यक दस्तावेज़",
+        "scheme.application_steps": "आवेदन प्रक्रिया",
+        "scheme.benefits": "योजना के लाभ",
+        "scheme.chat_ai": "AI से बात करें",
+        "scheme.ask_question": "इस योजना के बारे में कोई प्रश्न पूछें...",
+        "scheme.save_analysis": "विश्लेषण सेव करें",
+        "scheme.saved": "सेव हो गया",
+        "scheme.saving": "सेव हो रहा है...",
+        "scheme.max_benefit": "अधिकतम लाभ",
+        "scheme.deadline": "समय-सीमा",
+        "scheme.ministry": "मंत्रालय",
+        "scheme.category": "श्रेणी",
+        "scheme.official_portal": "आधिकारिक पोर्टल",
+        "scheme.what_if": "क्या-अगर विश्लेषण",
+        "scheme.met": "पूरा",
+        "scheme.not_met": "अपूर्ण",
+        "scheme.missing": "जानकारी उपलब्ध नहीं",
+
+        // Landing Page
+        "landing.home": "होम",
+        "landing.solutions": "समाधान",
+        "landing.schemes": "योजनाएँ",
+        "landing.about": "हमारे बारे में",
+        "landing.testimonials": "प्रशंसापत्र",
+        "landing.get_started": "शुरू करें",
+        "landing.login": "Google से लॉगिन",
+    },
+    mr: {
+        // Sidebar
+        "sidebar.dashboard": "डॅशबोर्ड",
+        "sidebar.profile": "प्रोफाइल",
+        "sidebar.explore": "योजना शोधा",
+        "sidebar.upload": "योजना अपलोड करा",
+        "sidebar.evaluations": "माझे मूल्यांकन",
+        "sidebar.docs": "कागदपत्रे मिळवा",
+        "sidebar.vault": "दस्तऐवज व्हॉल्ट",
+        "sidebar.resources": "संसाधने",
+        "sidebar.notifications": "सूचना",
+        "sidebar.logout": "लॉग आउट",
+        "sidebar.digilocker": "डिजिलॉकर जोडले",
+        "sidebar.digilocker_desc": "कागदपत्रे सत्यापित आणि सुरक्षित",
+        "sidebar.light_mode": "लाइट मोड",
+        "sidebar.dark_mode": "डार्क मोड",
+
+        // Common
+        "common.dashboard": "डॅशबोर्ड",
+        "common.search": "शोधा",
+        "common.upload": "अपलोड",
+        "common.download": "डाउनलोड",
+        "common.delete": "हटवा",
+        "common.cancel": "रद्द करा",
+        "common.save": "जतन करा",
+        "common.edit": "संपादित करा",
+        "common.back": "मागे",
+        "common.loading": "लोड होत आहे...",
+        "common.verified": "सत्यापित",
+        "common.footer": "© 2026 Eligify · AI-चालित धोरण निर्णय इंजिन",
+        "common.eligible": "पात्र",
+        "common.partial": "अंशतः जुळणी",
+        "common.not_eligible": "अपात्र",
+        "common.uploaded": "अपलोड केले",
+        "common.preloaded": "पूर्व-लोड",
+        "common.total": "एकूण",
+        "common.view_details": "तपशील पहा",
+        "common.apply_now": "आत्ता अर्ज करा",
+        "common.see_all": "सर्व पहा",
+        "common.welcome_back": "पुन्हा स्वागत",
+
+        // Dashboard
+        "dashboard.profile_completion": "प्रोफाइल पूर्णता",
+        "dashboard.complete_profile": "तुमचे प्रोफाइल पूर्ण करा",
+        "dashboard.recent_evaluations": "अलीकडील मूल्यांकन",
+        "dashboard.quick_actions": "जलद कृती",
+        "dashboard.no_evaluations": "अद्याप कोणतेही मूल्यांकन नाही",
+        "dashboard.upload_first": "तुमची पहिली योजना PDF अपलोड करा",
+        "dashboard.explore_schemes": "योजना शोधा",
+
+        // Upload Page
+        "upload.title": "योजना अपलोड करा",
+        "upload.subtitle": "सरकारी योजना PDF अपलोड करा आणि AI-चालित पात्रता मूल्यांकन मिळवा",
+        "upload.drag_drop": "तुमची PDF इथे ड्रॅग आणि ड्रॉप करा",
+        "upload.or_browse": "किंवा फाइल्स ब्राउझ करा",
+        "upload.max_size": "कमाल फाइल आकार: 10MB · फक्त PDF",
+        "upload.processing": "प्रक्रिया होत आहे...",
+        "upload.extracting": "योजना मजकूर काढला जात आहे",
+        "upload.extracting_desc": "अपलोड केलेला दस्तऐवज वाचला आणि पार्स केला जात आहे...",
+        "upload.identifying": "पात्रता नियम ओळखले जात आहेत",
+        "upload.identifying_desc": "अटी, निकष आणि आवश्यकता शोधल्या जात आहेत...",
+        "upload.evaluating": "तुमच्या प्रोफाइलशी जुळवणी",
+        "upload.evaluating_desc": "तुमचा प्रोफाइल डेटा योजना निकषांशी जुळवला जात आहे...",
+        "upload.language": "भाषा",
+        "upload.scheme_name": "योजनेचे नाव",
+        "upload.save_evaluations": "मूल्यांकनात जतन करा",
+        "upload.analyze": "योजनेचे विश्लेषण करा",
+        "upload.view_results": "निकाल पहा",
+        "upload.upload_another": "आणखी एक अपलोड करा",
+
+        // Explore Page
+        "explore.title": "योजना शोधा",
+        "explore.subtitle": "तुम्ही पात्र असलेल्या सरकारी योजना शोधा",
+        "explore.search_placeholder": "नाव, श्रेणी किंवा फायद्यानुसार योजना शोधा...",
+        "explore.recommended": "शिफारस केलेले",
+        "explore.all": "सर्व",
+        "explore.no_results": "तुमच्या शोधाशी कोणतीही योजना जुळत नाही",
+        "explore.try_different": "वेगळा शोध शब्द वापरून पहा",
+
+        // Evaluations Page
+        "evaluations.title": "माझे मूल्यांकन",
+        "evaluations.subtitle": "तुमच्या आधी तपासलेल्या योजना आणि पात्रता निकाल",
+        "evaluations.search_placeholder": "मूल्यांकित योजना शोधा...",
+        "evaluations.sort_latest": "अलीकडे तपासलेले",
+        "evaluations.sort_match": "सर्वोच्च जुळणी",
+        "evaluations.sort_name": "नाव A–Z",
+        "evaluations.no_results": "जुळणारे मूल्यांकन नाहीत",
+        "evaluations.no_schemes": "अद्याप कोणतीही योजना मूल्यांकित नाही",
+        "evaluations.no_schemes_desc": "तुमचे पहिले AI-चालित पात्रता मूल्यांकन मिळवण्यासाठी सरकारी योजना PDF अपलोड करा.",
+        "evaluations.try_different": "वेगळा शोध शब्द वापरून पहा",
+        "evaluations.clear_search": "शोध साफ करा",
+        "evaluations.upload_pdf": "योजना PDF अपलोड करा",
+        "evaluations.resume_chat": "चॅट सुरू ठेवा",
+        "evaluations.chat": "चॅट",
+        "evaluations.chats": "चॅट",
+
+        // Profile Page
+        "profile.title": "प्रोफाइल",
+        "profile.subtitle": "अचूक पात्रता तपासणीसाठी तुमची वैयक्तिक माहिती व्यवस्थापित करा",
+        "profile.basic_info": "मूलभूत माहिती",
+        "profile.education": "शिक्षण",
+        "profile.social_financial": "सामाजिक आणि आर्थिक",
+        "profile.family": "कुटुंब तपशील",
+        "profile.save_changes": "बदल जतन करा",
+        "profile.first_name": "पहिले नाव",
+        "profile.last_name": "आडनाव",
+        "profile.email": "ईमेल",
+        "profile.state": "राज्य",
+        "profile.gender": "लिंग",
+        "profile.dob": "जन्मतारीख",
+        "profile.occupation": "व्यवसाय",
+        "profile.education_level": "शिक्षण स्तर",
+        "profile.marks": "गुण / टक्केवारी",
+        "profile.category": "श्रेणी (SC/ST/OBC/सामान्य)",
+        "profile.annual_income": "वार्षिक उत्पन्न (₹)",
+        "profile.minority": "अल्पसंख्याक स्थिती",
+        "profile.disability": "अपंगत्व स्थिती",
+        "profile.area_type": "क्षेत्र प्रकार",
+        "profile.family_members": "कुटुंबातील सदस्य संख्या",
+
+        // Docs Page
+        "docs.title": "कागदपत्रे मिळवा",
+        "docs.subtitle": "योजना अर्जांसाठी आवश्यक कागदपत्रे मिळवण्यासाठी चरण-दर-चरण मार्गदर्शक",
+        "docs.how_to_get": "कसे मिळवायचे",
+        "docs.where_to_apply": "कुठे अर्ज करायचा",
+        "docs.processing_time": "प्रक्रिया वेळ",
+        "docs.required_docs": "आवश्यक कागदपत्रे",
+        "docs.steps": "चरण",
+        "docs.digilocker": "डिजिलॉकरवर उपलब्ध",
+
+        // Vault Page
+        "vault.title": "दस्तऐवज व्हॉल्ट",
+        "vault.subtitle": "तुमचे महत्त्वाचे दस्तऐवज सुरक्षितपणे साठवा आणि व्यवस्थापित करा",
+        "vault.upload_doc": "दस्तऐवज अपलोड करा",
+        "vault.no_docs": "कोणतेही दस्तऐवज सापडले नाहीत",
+        "vault.no_docs_desc": "सुरू करण्यासाठी तुमचा पहिला दस्तऐवज अपलोड करा",
+        "vault.file_name": "फाइलचे नाव",
+        "vault.category": "श्रेणी",
+        "vault.notes": "नोट्स (वैकल्पिक)",
+        "vault.rename": "नाव बदला",
+        "vault.confirm_delete": "तुम्हाला हा दस्तऐवज हटवायचा आहे का?",
+        "vault.filter_all": "सर्व",
+
+        // Resources Page
+        "resources.title": "संसाधने",
+        "resources.subtitle": "सरकारी योजनांबद्दल उपयुक्त मार्गदर्शक, व्हिडिओ आणि FAQ",
+        "resources.all": "सर्व",
+        "resources.scholarships": "शिष्यवृत्ती",
+        "resources.tips": "अर्ज टिप्स",
+        "resources.eligibility": "पात्रता",
+        "resources.walkthroughs": "वॉकथ्रू",
+        "resources.faq": "वारंवार विचारले जाणारे प्रश्न",
+        "resources.read_more": "अधिक वाचा",
+        "resources.watch": "पहा",
+
+        // Notifications Page
+        "notifications.title": "सूचना",
+        "notifications.subtitle": "योजना मुदत, जुळणी आणि स्मरणपत्रांबद्दल अद्ययावत रहा",
+        "notifications.all": "सर्व",
+        "notifications.unread": "न वाचलेले",
+        "notifications.deadlines": "मुदत",
+        "notifications.matches": "जुळणी",
+        "notifications.mark_all_read": "सर्व वाचलेले म्हणून चिन्हांकित करा",
+        "notifications.no_notifications": "कोणतीही सूचना नाही",
+
+        // Scheme Detail Page
+        "scheme.eligibility_criteria": "पात्रता निकष",
+        "scheme.required_docs": "आवश्यक कागदपत्रे",
+        "scheme.application_steps": "अर्ज प्रक्रिया",
+        "scheme.benefits": "योजनेचे फायदे",
+        "scheme.chat_ai": "AI शी बोला",
+        "scheme.ask_question": "या योजनेबद्दल प्रश्न विचारा...",
+        "scheme.save_analysis": "विश्लेषण जतन करा",
+        "scheme.saved": "जतन झाले",
+        "scheme.saving": "जतन होत आहे...",
+        "scheme.max_benefit": "कमाल लाभ",
+        "scheme.deadline": "मुदत",
+        "scheme.ministry": "मंत्रालय",
+        "scheme.category": "श्रेणी",
+        "scheme.official_portal": "अधिकृत पोर्टल",
+        "scheme.what_if": "काय-जर विश्लेषण",
+        "scheme.met": "पूर्ण",
+        "scheme.not_met": "अपूर्ण",
+        "scheme.missing": "माहिती उपलब्ध नाही",
+
+        // Landing Page
+        "landing.home": "मुख्यपृष्ठ",
+        "landing.solutions": "उपाय",
+        "landing.schemes": "योजना",
+        "landing.about": "आमच्याबद्दल",
+        "landing.testimonials": "प्रशंसापत्रे",
+        "landing.get_started": "सुरू करा",
+        "landing.login": "Google ने लॉगिन करा",
+    },
+};
+
+export function LanguageProvider({ children }: { children: React.ReactNode }) {
+    const [lang, setLangState] = useState<Language>("en");
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const stored = localStorage.getItem("eligify-lang") as Language | null;
+        if (stored && translations[stored]) {
+            setLangState(stored);
+        }
+        setMounted(true);
+    }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        localStorage.setItem("eligify-lang", lang);
+        document.documentElement.setAttribute("lang", lang === "en" ? "en" : lang === "hi" ? "hi" : "mr");
+    }, [lang, mounted]);
+
+    const setLang = useCallback((l: Language) => {
+        setLangState(l);
+    }, []);
+
+
+    // Enhanced t function: supports variable interpolation
+    const t = useCallback(
+        (key: string, vars?: Record<string, string | number>): string => {
+            let str = translations[lang]?.[key] || translations["en"]?.[key] || key;
+            if (vars) {
+                Object.entries(vars).forEach(([k, v]) => {
+                    str = str.replace(new RegExp(`\\{${k}\\}`, "g"), String(v));
+                });
+            }
+            return str;
+        },
+        [lang]
+    );
+
+    return (
+        <LanguageContext.Provider value={{ lang, setLang, t }}>
+            {children}
+        </LanguageContext.Provider>
+    );
+}
+
+export function useLanguage() {
+    return useContext(LanguageContext);
+}

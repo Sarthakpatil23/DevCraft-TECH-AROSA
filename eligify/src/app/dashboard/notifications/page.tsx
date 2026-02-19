@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -40,15 +42,15 @@ import { Separator } from "@/components/ui/separator";
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -174,13 +176,17 @@ function SidebarNotifBadge({ count }: { count: number }) {
 // ═══════════════════════════════════════════════════════════════════
 export default function NotificationsPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>(INITIAL_NOTIFICATIONS);
     const [filter, setFilter] = useState<FilterKey>("all");
+    const [userName, setUserName] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
     }, [router]);
 
     const handleLogout = () => {
@@ -234,8 +240,8 @@ export default function NotificationsPage() {
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -246,14 +252,14 @@ export default function NotificationsPage() {
                             <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <SidebarNotifBadge count={unreadCount} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
         <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -264,12 +270,13 @@ export default function NotificationsPage() {
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)]"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Notifications</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("sidebar.notifications")}</span>
                         </div>
                     </div>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                    <LanguageSwitcher compact />
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                 </motion.header>
 
                 <div className="px-4 lg:px-8 py-8 max-w-[720px] mx-auto">
@@ -284,19 +291,19 @@ export default function NotificationsPage() {
                                             <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">{unreadCount}</span>
                                         )}
                                     </div>
-                                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">Notifications</h1>
+                                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("sidebar.notifications")}</h1>
                                 </div>
-                                <p className="text-sm text-[var(--text-30)]">Stay updated with important alerts</p>
+                                <p className="text-sm text-[var(--text-30)]">{t("notifications.subtitle")}</p>
                             </div>
                             {notifications.length > 0 && (
                                 <div className="flex items-center gap-2">
                                     {unreadCount > 0 && (
                                         <Button variant="outline" size="sm" onClick={markAllRead} className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-40)] hover:text-[var(--text-primary)] text-[11px] h-8 gap-1.5">
-                                            <Check className="w-3 h-3" />Mark All Read
+                                            <Check className="w-3 h-3" />{t("notifications.mark_all_read")}
                                         </Button>
                                     )}
                                     <Button variant="outline" size="sm" onClick={clearAll} className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-40)] hover:text-red-400 text-[11px] h-8 gap-1.5">
-                                        <Trash2 className="w-3 h-3" />Clear All
+                                        <Trash2 className="w-3 h-3" />{t("notifications.clear_all")}
                                     </Button>
                                 </div>
                             )}
@@ -306,8 +313,8 @@ export default function NotificationsPage() {
                     {/* Filters */}
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-2 mb-6 overflow-x-auto pb-1 scrollbar-none">
                         {FILTERS.map((f) => (
-                            <button key={f.key} onClick={() => setFilter(f.key)} className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap border", filter === f.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-25)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-40)]")}>
-                                {f.label}
+                            <button key={f.key} onClick={() => setFilter(f.key)} className={cn("px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all whitespace-nowrap border", filter === f.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-25)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-40)]")}> 
+                                {t(`notifications.filters.${f.key}`, { count: unreadCount })}
                             </button>
                         ))}
                     </motion.div>
@@ -319,12 +326,12 @@ export default function NotificationsPage() {
                                 <Inbox className="w-7 h-7 text-[var(--text-15)]" />
                             </div>
                             <h3 className="text-base font-semibold text-[var(--text-50)] mb-1">
-                                {filter === "all" ? "No notifications" : "No matching notifications"}
+                                {filter === "all" ? t("notifications.none") : t("notifications.none_filtered")}
                             </h3>
                             <p className="text-xs text-[var(--text-20)] max-w-xs mx-auto">
                                 {filter === "all"
-                                    ? "You're all caught up! We'll notify you when something important happens."
-                                    : "Try a different filter to see more notifications."}
+                                    ? t("notifications.caught_up")
+                                    : t("notifications.try_filter")}
                             </p>
                         </motion.div>
                     ) : (
@@ -399,7 +406,7 @@ export default function NotificationsPage() {
                                                     }}
                                                     className="border-[var(--border-6)] bg-[var(--surface-2)] text-[var(--text-30)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-[10px] h-7 gap-1 flex-shrink-0 hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
-                                                    <Eye className="w-3 h-3" />View Scheme
+                                                    <Eye className="w-3 h-3" />{t("notifications.view_scheme")}
                                                 </Button>
                                             )}
                                         </div>
@@ -411,7 +418,7 @@ export default function NotificationsPage() {
 
                     {/* Footer */}
                     <div className="text-center py-10 border-t border-[var(--border-4)] mt-12">
-                        <p className="text-xs text-[var(--text-15)]">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                        <p className="text-xs text-[var(--text-15)]">{t("common.footer")}</p>
                     </div>
                 </div>
             </main>

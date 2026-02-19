@@ -43,18 +43,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Scheme Types ───────────────────────────────────────────────────
@@ -407,10 +409,18 @@ export default function ExploreSchemesPage() {
     const [activeTab, setActiveTab] = useState("recommended");
     const [searchQuery, setSearchQuery] = useState("");
     const profileCompletion = 80;
+    const [userName, setUserName] = useState("");
+    const { t } = useLanguage();
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", {
+            headers: { Authorization: `Bearer ${token}` },
+        }).then(r => r.json()).then(data => {
+            const u = data.user;
+            setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || "");
+        }).catch(() => {});
     }, [router]);
 
     // ── Filter & Sort Logic ───────────────────────────────────────────
@@ -490,9 +500,9 @@ export default function ExploreSchemesPage() {
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
                     <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-emerald-400" />
-                        <span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span>
+                        <span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span>
                     </div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
 
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
@@ -523,7 +533,7 @@ export default function ExploreSchemesPage() {
                                     <Icon className="w-[18px] h-[18px]" />
                                     {item.id === "notifications" && <NotifBadge count={2} />}
                                 </div>
-                                {item.label}
+                                {t(item.label)}
                                 {item.id === "profile" && (
                                     <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {profileCompletion}%
@@ -535,13 +545,13 @@ export default function ExploreSchemesPage() {
                 </nav>
 
                 <div className="px-3 py-2"><ThemeToggle /></div>
-        <div className="p-4 border-t border-[var(--border-4)]">
+                <div className="p-4 border-t border-[var(--border-4)]">
                     <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
                     >
                         <LogOut className="w-[18px] h-[18px]" />
-                        Logout
+                        {t("sidebar.logout")}
                     </button>
                 </div>
             </aside>
@@ -566,14 +576,15 @@ export default function ExploreSchemesPage() {
                                 onClick={() => router.push("/dashboard")}
                                 className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm transition-colors"
                             >
-                                Dashboard
+                                {t("common.dashboard")}
                             </button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Explore Schemes</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("explore.title")}</span>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <LanguageSwitcher compact />
                         <Button
                             variant="outline"
                             size="sm"
@@ -581,14 +592,14 @@ export default function ExploreSchemesPage() {
                             className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs"
                         >
                             <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
-                            Dashboard
+                            {t("common.dashboard")}
                         </Button>
                         <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
-                                R
+                                {userName ? userName.charAt(0).toUpperCase() : "?"}
                             </div>
                             <div className="hidden md:block">
-                                <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">Rohit Sharma</p>
+                                <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">{userName || "Loading..."}</p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
                                     <CheckCircle2 className="w-3 h-3" /> Verified
                                 </p>
@@ -612,7 +623,7 @@ export default function ExploreSchemesPage() {
                             <div>
                                 <h1 className="text-2xl lg:text-3xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                                     <Search className="w-7 h-7 text-[var(--text-30)]" />
-                                    Explore Schemes
+                                    {t("explore.title")}
                                 </h1>
                                 <p className="text-sm text-[var(--text-35)] mt-1">
                                     Personalized recommendations based on your profile
@@ -670,7 +681,7 @@ export default function ExploreSchemesPage() {
                         <div className="relative">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)]" />
                             <Input
-                                placeholder="Search schemes by name, category, ministry..."
+                                placeholder={t("explore.search_placeholder")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-full pl-11 pr-4 py-3 h-12 bg-[var(--bg-card)] border-[#1a1a1a] text-[var(--text-primary)] placeholder:text-[var(--text-20)] focus-visible:border-[var(--border-15)] rounded-xl text-sm"
@@ -760,7 +771,7 @@ export default function ExploreSchemesPage() {
                         className="text-center py-10 border-t border-[var(--border-4)] mt-10 relative z-10"
                     >
                         <p className="text-xs text-[var(--text-15)]">
-                            © 2026 Eligify · AI-Powered Policy Decision Engine
+                            {t("common.footer")}
                         </p>
                     </motion.div>
                 </div>

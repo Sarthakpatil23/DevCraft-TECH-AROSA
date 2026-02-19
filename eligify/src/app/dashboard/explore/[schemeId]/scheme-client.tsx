@@ -42,6 +42,8 @@ import {
     Save,
 } from "lucide-react";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -52,18 +54,20 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -199,8 +203,15 @@ export default function SchemeIntelligencePage() {
     const [activePanel, setActivePanel] = useState<"eligibility" | "chat" | "execution">("eligibility");
     const [analysisSaved, setAnalysisSaved] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [userName, setUserName] = useState("");
+    const { t } = useLanguage();
 
-    useEffect(() => { const token = localStorage.getItem("access_token"); if (!token) router.push("/"); }, [router]);
+    useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
+    }, [router]);
     useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [chatMessages]);
 
     // Fetch scheme data from API
@@ -284,9 +295,9 @@ export default function SchemeIntelligencePage() {
     };
 
     const quickActions = [
-        { label: "Why am I not eligible?", icon: HelpCircle },
-        { label: "What documents are required?", icon: FileText },
-        { label: "How can I improve eligibility?", icon: Sparkles },
+        { label: t("scheme.why_not_eligible"), icon: HelpCircle },
+        { label: t("scheme.required_documents"), icon: FileText },
+        { label: t("scheme.improve_eligibility"), icon: Sparkles },
     ];
 
     const saveAnalysis = async () => {
@@ -337,30 +348,33 @@ export default function SchemeIntelligencePage() {
         <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)] flex">
             {/* ═══ SIDEBAR ═══ */}
             <AnimatePresence>{sidebarOpen && (<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-[var(--overlay)] z-40 lg:hidden" />)}</AnimatePresence>
-            <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
+            <aside className={cn("fixed top-0 left-0 h-screen w-[260px] bg-[var(--bg-sidebar)] border-r border-[var(--border-6)] flex flex-col z-50 transition-transform duration-300 lg:translate-x-0", sidebarOpen ? "translate-x-0" : "-translate-x-full")}> 
                 <div className="p-6 pb-4 flex items-center gap-3">
                     <img src="/logo.png" alt="Eligify Logo" className="h-20 w-auto object-contain logo-themed" />
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)] transition-colors"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
                     {sidebarItems.map((item) => {
                         const Icon = item.icon; const isActive = item.id === "explore"; return (
-                            <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
+                            <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}> 
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" transition={{ type: "spring", stiffness: 300, damping: 30 }} />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
-                <div className="px-3 py-2"><ThemeToggle /></div>
-        <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                <div className="px-3 py-2 flex gap-2 items-center">
+                    <ThemeToggle />
+                    <LanguageSwitcher compact />
+                </div>
+                <div className="p-4 border-t border-[var(--border-4)]">
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -370,16 +384,17 @@ export default function SchemeIntelligencePage() {
                     <div className="flex items-center gap-3">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)] transition-colors"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-1.5 text-xs">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-25)] hover:text-[var(--text-50)] transition-colors">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-25)] hover:text-[var(--text-50)] transition-colors">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3 h-3 text-[var(--text-15)]" />
-                            <button onClick={() => router.push("/dashboard/explore")} className="text-[var(--text-25)] hover:text-[var(--text-50)] transition-colors">Explore</button>
+                            <button onClick={() => router.push("/dashboard/explore")} className="text-[var(--text-25)] hover:text-[var(--text-50)] transition-colors">{t("sidebar.explore")}</button>
                             <ChevronRight className="w-3 h-3 text-[var(--text-15)]" />
                             <span className="text-[var(--text-70)] font-medium truncate max-w-[200px]">{scheme.name}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/explore")} className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs h-8"><ArrowLeft className="w-3.5 h-3.5 mr-1" />Back</Button>
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-xs font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                        <LanguageSwitcher compact />
+                        <Button variant="outline" size="sm" onClick={() => router.push("/dashboard/explore")} className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs h-8"><ArrowLeft className="w-3.5 h-3.5 mr-1" />{t("common.back")}</Button>
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-xs font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                     </div>
                 </motion.header>
 
@@ -409,11 +424,11 @@ export default function SchemeIntelligencePage() {
                                 )}
                             >
                                 {saving ? (
-                                    <><motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Zap className="w-3.5 h-3.5" /></motion.div>Saving...</>
+                                    <><motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}><Zap className="w-3.5 h-3.5" /></motion.div>{t("scheme.saving")}</>
                                 ) : analysisSaved ? (
-                                    <><CheckCircle2 className="w-3.5 h-3.5" />Saved to Evaluations</>
+                                    <><CheckCircle2 className="w-3.5 h-3.5" />{t("scheme.saved")}</>
                                 ) : (
-                                    <><Save className="w-3.5 h-3.5" />Save Analysis</>
+                                    <><Save className="w-3.5 h-3.5" />{t("scheme.save_analysis")}</>
                                 )}
                             </Button>
                         </div>
@@ -422,8 +437,12 @@ export default function SchemeIntelligencePage() {
 
                 {/* Mobile Tab Switcher */}
                 <div className="lg:hidden px-4 py-2 border-b border-[var(--border-4)] flex gap-1 bg-[var(--bg-page)]">
-                    {([{ key: "eligibility" as const, label: "Eligibility", icon: CheckCircle2 }, { key: "chat" as const, label: "AI Chat", icon: MessageCircle }, { key: "execution" as const, label: "Execution", icon: BookOpenCheck }]).map((panel) => (
-                        <button key={panel.key} onClick={() => setActivePanel(panel.key)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all", activePanel === panel.key ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-30)] hover:text-[var(--text-50)]")}>
+                    {([
+                        { key: "eligibility" as const, label: t("scheme.eligibility_criteria"), icon: CheckCircle2 },
+                        { key: "chat" as const, label: t("scheme.chat_ai"), icon: MessageCircle },
+                        { key: "execution" as const, label: t("scheme.application_steps"), icon: BookOpenCheck }
+                    ]).map((panel) => (
+                        <button key={panel.key} onClick={() => setActivePanel(panel.key)} className={cn("flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all", activePanel === panel.key ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-30)] hover:text-[var(--text-50)]")}> 
                             <panel.icon className="w-3.5 h-3.5" />{panel.label}
                         </button>
                     ))}
@@ -478,7 +497,11 @@ export default function SchemeIntelligencePage() {
                                     <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={cn("flex", msg.role === "user" ? "justify-end" : "justify-start")}>
                                         <div className={cn("max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed", msg.role === "user" ? "bg-[var(--surface-8)] text-[var(--text-80)] rounded-br-md" : "bg-[var(--bg-card)] border border-[var(--border-4)] text-[var(--text-60)] rounded-bl-md")}>
                                             {msg.role === "ai" && (<div className="flex items-center gap-1.5 mb-2"><Zap className="w-3 h-3 text-emerald-400" /><span className="text-[10px] font-semibold text-emerald-400/70">Eligify AI</span></div>)}
-                                            <div className="whitespace-pre-line">{msg.content}</div>
+                                            {msg.role === "ai" ? (
+                                                <div className="chat-markdown"><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
+                                            ) : (
+                                                <div className="whitespace-pre-line">{msg.content}</div>
+                                            )}
                                             <p className="text-[9px] text-[var(--text-15)] mt-2 text-right">{msg.timestamp.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}</p>
                                         </div>
                                     </motion.div>
@@ -505,7 +528,7 @@ export default function SchemeIntelligencePage() {
                         )}
                         <div className="p-4 border-t border-[var(--border-4)] bg-[var(--bg-page)]/50">
                             <div className="flex gap-2 max-w-[600px] mx-auto">
-                                <Input value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(chatInput)} placeholder={`Ask about ${scheme.name}...`} className="flex-1 bg-[var(--bg-card)] border-[var(--border-6)] text-[var(--text-primary)] placeholder:text-[var(--text-15)] h-10 rounded-xl text-xs" />
+                                <Input value={chatInput} onChange={(e) => setChatInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendMessage(chatInput)} placeholder={t("scheme.ask_question")} className="flex-1 bg-[var(--bg-card)] border-[var(--border-6)] text-[var(--text-primary)] placeholder:text-[var(--text-15)] h-10 rounded-xl text-xs" />
                                 <Button onClick={() => sendMessage(chatInput)} disabled={!chatInput.trim() || isTyping} size="icon" className="bg-emerald-500 hover:bg-emerald-600 text-[var(--text-primary)] w-10 h-10 rounded-xl shrink-0 disabled:opacity-30"><Send className="w-4 h-4" /></Button>
                             </div>
                         </div>
@@ -595,6 +618,10 @@ export default function SchemeIntelligencePage() {
                     </motion.div>
                 </div>
             </main>
-        </div>
+        {/* Footer */}
+        <footer className="w-full text-center py-4 text-xs text-[var(--text-30)] bg-[var(--bg-page)] border-t border-[var(--border-4)]">
+            {t("common.footer")}
+        </footer>
+    </div>
     );
 }

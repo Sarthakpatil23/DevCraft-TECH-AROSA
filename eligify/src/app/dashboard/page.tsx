@@ -4,6 +4,8 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import {
     LayoutDashboard,
     User,
@@ -41,15 +43,15 @@ import {
 
 // ─── Sidebar Navigation Items ───────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard" },
-    { icon: User, label: "Profile", id: "profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault" },
-    { icon: BookOpen, label: "Resources", id: "resources" },
-    { icon: Bell, label: "Notifications", id: "notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications" },
 ];
 
 // ─── Circular Progress Ring ─────────────────────────────────────────
@@ -432,6 +434,7 @@ const notifications = [
 // ─── Main Dashboard Component ───────────────────────────────────────
 export default function Dashboard() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [activeSection, setActiveSection] = useState("dashboard");
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
@@ -444,10 +447,10 @@ export default function Dashboard() {
     const [userName, setUserName] = useState("");
     const [profileCompletion, setProfileCompletion] = useState(0);
     const [profileFields, setProfileFields] = useState([
-        { name: "Basic Info", done: false },
-        { name: "Education", done: false },
-        { name: "Social & Financial", done: false },
-        { name: "Family Details", done: false },
+        { name: t("profile.basic_info"), done: false },
+        { name: t("profile.education"), done: false },
+        { name: t("profile.social_financial"), done: false },
+        { name: t("profile.family_details"), done: false },
     ]);
 
     useEffect(() => {
@@ -612,11 +615,11 @@ export default function Dashboard() {
                     <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-400">
-                            DigiLocker Connected
+                            {t("sidebar.digilocker")}
                         </span>
                     </div>
                     <p className="text-[10px] text-[var(--text-30)] mt-1">
-                        Documents verified & secure
+                        {t("sidebar.digilocker_desc")}
                     </p>
                 </div>
 
@@ -650,7 +653,7 @@ export default function Dashboard() {
                                         <NotifBadge count={unreadNotifs} />
                                     )}
                                 </div>
-                                {item.label}
+                                {t(item.label)}
                                 {item.id === "profile" && (
                                     <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {profileCompletion}%
@@ -669,7 +672,7 @@ export default function Dashboard() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
                     >
                         <LogOut className="w-[18px] h-[18px]" />
-                        Logout
+                        {t("sidebar.logout")}
                     </button>
                 </div>
             </aside>
@@ -694,7 +697,7 @@ export default function Dashboard() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)]" />
                             <input
                                 type="text"
-                                placeholder="Search schemes, documents..."
+                                placeholder={t("dashboard.search_placeholder")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="w-[300px] lg:w-[380px] pl-10 pr-4 py-2.5 bg-[var(--surface-3)] border border-[var(--border-6)] rounded-xl text-sm text-[var(--text-primary)] placeholder:text-[var(--text-20)] focus:outline-none focus:border-[var(--border-15)] focus:bg-[var(--surface-5)] transition-all"
@@ -703,6 +706,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        <LanguageSwitcher compact />
                         {/* Notifications bell */}
                         <button
                             onClick={() => scrollToSection("notifications")}
@@ -719,10 +723,10 @@ export default function Dashboard() {
                             </div>
                             <div className="hidden md:block">
                                 <p className="text-sm font-semibold text-[var(--text-primary)] leading-none">
-                                    {userName || "Loading..."}
+                                    {userName || t("common.loading")}
                                 </p>
                                 <p className="text-[10px] text-emerald-400/80 flex items-center gap-1 mt-0.5">
-                                    <CheckCircle2 className="w-3 h-3" /> Verified
+                                    <CheckCircle2 className="w-3 h-3" /> {t("profile.verified")}
                                 </p>
                             </div>
                         </div>
@@ -743,12 +747,10 @@ export default function Dashboard() {
                         className="relative z-10"
                     >
                         <h1 className="text-3xl lg:text-4xl font-bold text-[var(--text-primary)]">
-                            Welcome Back{userName ? `, ${userName.split(' ')[0]}` : ""}!
+                            {t("dashboard.welcome", { name: userName ? userName.split(' ')[0] : "" })}
                         </h1>
                         <p className="text-[var(--text-40)] mt-2 text-base">
-                            Discover schemes you&apos;re{" "}
-                            <span className="text-emerald-400 font-semibold">eligible</span>{" "}
-                            for
+                            {t("dashboard.welcome_subtitle")}
                         </p>
                     </motion.div>
 
@@ -756,28 +758,28 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                         {[
                             {
-                                label: "Schemes Matched",
+                                label: t("dashboard.stats.schemes_matched"),
                                 value: "12",
                                 icon: Sparkles,
                                 color: "text-emerald-400",
                                 bg: "bg-emerald-400/10",
                             },
                             {
-                                label: "Evaluations Done",
+                                label: t("dashboard.stats.evaluations_done"),
                                 value: "4",
                                 icon: ClipboardList,
                                 color: "text-blue-400",
                                 bg: "bg-blue-400/10",
                             },
                             {
-                                label: "Docs Verified",
+                                label: t("dashboard.stats.docs_verified"),
                                 value: "3",
                                 icon: Shield,
                                 color: "text-violet-400",
                                 bg: "bg-violet-400/10",
                             },
                             {
-                                label: "Pending Actions",
+                                label: t("dashboard.stats.pending_actions"),
                                 value: "2",
                                 icon: AlertCircle,
                                 color: "text-amber-400",
@@ -817,10 +819,10 @@ export default function Dashboard() {
                                 <div>
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <User className="w-5 h-5 text-[var(--text-40)]" />
-                                        Profile
+                                        {t("sidebar.profile")}
                                     </h3>
                                     <p className="text-xs text-[var(--text-30)] mt-1">
-                                        Profile Completion
+                                        {t("profile.completion")}
                                     </p>
                                 </div>
                                 <ProfileRing percentage={profileCompletion} />
@@ -838,7 +840,7 @@ export default function Dashboard() {
                                             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                                         ) : (
                                             <span className="text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">
-                                                Incomplete
+                                                {t("profile.incomplete")}
                                             </span>
                                         )}
                                     </div>
@@ -849,7 +851,7 @@ export default function Dashboard() {
                                 onClick={() => router.push("/dashboard/profile")}
                                 className="mt-4 w-full py-2.5 rounded-xl bg-white text-black text-sm font-semibold hover:bg-white/90 hover:shadow-lg hover:shadow-white/10 transition-all flex items-center justify-center gap-2"
                             >
-                                Update Profile
+                                {t("profile.update")}
                                 <ChevronRight className="w-4 h-4" />
                             </button>
                         </DashCard>
@@ -864,10 +866,10 @@ export default function Dashboard() {
                                 <div>
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <Search className="w-5 h-5 text-[var(--text-40)]" />
-                                        Explore Schemes
+                                        {t("sidebar.explore")}
                                     </h3>
                                     <p className="text-xs text-[var(--text-30)] mt-1">
-                                        Personalized recommendations based on your profile
+                                        {t("explore.recommendations")}
                                     </p>
                                 </div>
                                 <motion.div
@@ -888,7 +890,7 @@ export default function Dashboard() {
                                 onClick={() => router.push("/dashboard/explore")}
                                 className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2"
                             >
-                                View All Schemes
+                                {t("explore.view_all")}
                                 <ExternalLink className="w-3.5 h-3.5" />
                             </button>
                         </DashCard>
@@ -903,11 +905,10 @@ export default function Dashboard() {
                         <DashCard delay={0.35}>
                             <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-1">
                                 <Upload className="w-5 h-5 text-[var(--text-40)]" />
-                                Upload Custom Scheme
+                                {t("sidebar.upload")}
                             </h3>
                             <p className="text-xs text-[var(--text-30)] mb-4">
-                                Upload a scheme PDF to extract eligibility rules and check
-                                instantly
+                                {t("upload.subtitle")}
                             </p>
 
                             {/* Simplified upload teaser */}
@@ -928,12 +929,12 @@ export default function Dashboard() {
                                 </motion.div>
                                 <p className="text-sm text-[var(--text-50)]">
                                     <span className="text-[var(--text-primary)] font-medium">
-                                        Click to upload
+                                        {t("upload.click_to_upload")}
                                     </span>{" "}
-                                    or drag and drop
+                                    {t("upload.or_drag")}
                                 </p>
                                 <p className="text-[10px] text-[var(--text-20)]">
-                                    PDF files only · Max 10MB
+                                    {t("upload.pdf_only")}
                                 </p>
                             </div>
 
@@ -942,7 +943,7 @@ export default function Dashboard() {
                                 className="mt-4 w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold hover:opacity-90 transition-all flex items-center justify-center gap-2"
                             >
                                 <Zap className="w-4 h-4" />
-                                Upload & Analyze
+                                {t("upload.upload_analyze")}
                             </button>
                         </DashCard>
 
@@ -952,10 +953,10 @@ export default function Dashboard() {
                                 <div>
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <ClipboardList className="w-5 h-5 text-[var(--text-40)]" />
-                                        My Evaluations
+                                        {t("sidebar.evaluations")}
                                     </h3>
                                     <p className="text-xs text-[var(--text-30)] mt-1">
-                                        Previously checked schemes & eligibility results
+                                        {t("evaluations.subtitle")}
                                     </p>
                                 </div>
                                 <div className="flex items-center gap-2 text-xs text-[var(--text-30)]">
@@ -971,7 +972,7 @@ export default function Dashboard() {
                             </div>
 
                             <button className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2">
-                                View History
+                                {t("evaluations.view_history")}
                                 <Clock className="w-3.5 h-3.5" />
                             </button>
                         </DashCard>
@@ -986,10 +987,10 @@ export default function Dashboard() {
                         <DashCard className="lg:col-span-2" delay={0.45}>
                             <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2 mb-1">
                                 <FileCheck className="w-5 h-5 text-[var(--text-40)]" />
-                                Get Your Docs
+                                {t("sidebar.docs")}
                             </h3>
                             <p className="text-xs text-[var(--text-30)] mb-5">
-                                Step-by-step guidance to obtain required certificates
+                                {t("docs.subtitle")}
                             </p>
 
                             <div className="space-y-5">
@@ -1008,7 +1009,7 @@ export default function Dashboard() {
                             <div className="mt-5 pt-4 border-t border-[var(--border-4)]">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs text-[var(--text-30)]">
-                                        Document Progress
+                                        {t("docs.progress")}
                                     </span>
                                     <span className="text-xs font-semibold text-[var(--text-50)]">
                                         2/4
@@ -1035,10 +1036,10 @@ export default function Dashboard() {
                                 <div>
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <BookOpen className="w-5 h-5 text-[var(--text-40)]" />
-                                        Resources
+                                        {t("sidebar.resources")}
                                     </h3>
                                     <p className="text-xs text-[var(--text-30)] mt-1">
-                                        Videos & guides to help you apply for schemes
+                                        {t("resources.subtitle")}
                                     </p>
                                 </div>
                             </div>
@@ -1050,7 +1051,7 @@ export default function Dashboard() {
                             </div>
 
                             <button className="mt-4 w-full py-2.5 rounded-xl bg-[var(--surface-4)] hover:bg-[var(--surface-8)] border border-[var(--border-6)] text-[var(--text-primary)] text-sm font-medium transition-all flex items-center justify-center gap-2">
-                                Browse All Resources
+                                {t("resources.browse_all")}
                                 <BookOpen className="w-3.5 h-3.5" />
                             </button>
                         </DashCard>
@@ -1063,7 +1064,7 @@ export default function Dashboard() {
                                 <div>
                                     <h3 className="text-lg font-bold text-[var(--text-primary)] flex items-center gap-2">
                                         <Bell className="w-5 h-5 text-[var(--text-40)]" />
-                                        Notifications
+                                        {t("sidebar.notifications")}
                                         {unreadNotifs > 0 && (
                                             <span className="ml-1 text-xs font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full">
                                                 {unreadNotifs} new
@@ -1071,11 +1072,11 @@ export default function Dashboard() {
                                         )}
                                     </h3>
                                     <p className="text-xs text-[var(--text-30)] mt-1">
-                                        Deadlines, new schemes, and important updates
+                                        {t("notifications.subtitle")}
                                     </p>
                                 </div>
                                 <button className="text-xs text-[var(--text-30)] hover:text-[var(--text-60)] transition-colors">
-                                    Mark all read
+                                    {t("notifications.mark_all_read")}
                                 </button>
                             </div>
 
@@ -1095,7 +1096,7 @@ export default function Dashboard() {
                         className="relative z-10 text-center py-8 border-t border-[var(--border-4)]"
                     >
                         <p className="text-xs text-[var(--text-15)]">
-                            © 2026 Eligify · AI-Powered Policy Decision Engine
+                            {t("common.footer")}
                         </p>
                     </motion.div>
                 </div>

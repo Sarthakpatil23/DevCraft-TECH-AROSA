@@ -38,17 +38,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
+
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -70,9 +73,9 @@ interface Evaluation {
 // ─── Sort Options ───────────────────────────────────────────────────
 type SortKey = "latest" | "match" | "name";
 const SORT_OPTIONS: { key: SortKey; label: string; icon: React.ElementType }[] = [
-    { key: "latest", label: "Latest Checked", icon: Calendar },
-    { key: "match", label: "Highest Match", icon: TrendingUp },
-    { key: "name", label: "Name A–Z", icon: ArrowUpDown },
+    { key: "latest", label: "evaluations.sort_latest", icon: Calendar },
+    { key: "match", label: "evaluations.sort_match", icon: TrendingUp },
+    { key: "name", label: "evaluations.sort_name", icon: ArrowUpDown },
 ];
 
 // ─── NotifBadge ─────────────────────────────────────────────────────
@@ -115,10 +118,15 @@ export default function MyEvaluationsPage() {
     const [sortOpen, setSortOpen] = useState(false);
     const [evaluations, setEvaluations] = useState<Evaluation[]>([]);
     const [loading, setLoading] = useState(true);
+    const [userName, setUserName] = useState("");
+
+    const { t } = useLanguage();
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
         if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
         const fetchEvaluations = async () => {
             try {
                 const res = await fetch("http://127.0.0.1:8000/api/my-evaluations/", {
@@ -138,9 +146,9 @@ export default function MyEvaluationsPage() {
     }, [router]);
 
     const eligBadge = {
-        eligible: { label: "Eligible", class: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
-        partial: { label: "Partial Match", class: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
-        "not-eligible": { label: "Not Eligible", class: "bg-red-500/15 text-red-400 border-red-500/20" },
+        eligible: { label: t("common.eligible"), class: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" },
+        partial: { label: t("common.partial"), class: "bg-amber-500/15 text-amber-400 border-amber-500/20" },
+        "not-eligible": { label: t("common.not_eligible"), class: "bg-red-500/15 text-red-400 border-red-500/20" },
     };
 
     const filtered = useMemo(() => {
@@ -184,8 +192,8 @@ export default function MyEvaluationsPage() {
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -196,14 +204,14 @@ export default function MyEvaluationsPage() {
                             <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
         <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -214,13 +222,14 @@ export default function MyEvaluationsPage() {
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)]"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">My Evaluations</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("evaluations.title")}</span>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                        <LanguageSwitcher compact />
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                     </div>
                 </motion.header>
 
@@ -233,14 +242,14 @@ export default function MyEvaluationsPage() {
                                     <div className="w-10 h-10 rounded-xl bg-[var(--surface-4)] border border-[var(--border-6)] flex items-center justify-center">
                                         <ClipboardList className="w-5 h-5 text-[var(--text-40)]" />
                                     </div>
-                                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">My Evaluations</h1>
+                                    <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("evaluations.title")}</h1>
                                 </div>
-                                <p className="text-sm text-[var(--text-30)]">Your previously checked schemes and eligibility results</p>
+                                <p className="text-sm text-[var(--text-30)]">{t("evaluations.subtitle")}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Badge className="bg-emerald-500/10 text-emerald-400/70 border-emerald-500/15 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />{eligibleCount} Eligible</Badge>
-                                <Badge className="bg-amber-500/10 text-amber-400/70 border-amber-500/15 text-[10px] gap-1"><AlertCircle className="w-3 h-3" />{partialCount} Partial</Badge>
-                                <Badge className="bg-[var(--surface-4)] text-[var(--text-30)] border-[var(--border-6)] text-[10px] gap-1"><FileText className="w-3 h-3" />{evaluations.length} Total</Badge>
+                                <Badge className="bg-emerald-500/10 text-emerald-400/70 border-emerald-500/15 text-[10px] gap-1"><CheckCircle2 className="w-3 h-3" />{eligibleCount} {t("common.eligible")}</Badge>
+                                <Badge className="bg-amber-500/10 text-amber-400/70 border-amber-500/15 text-[10px] gap-1"><AlertCircle className="w-3 h-3" />{partialCount} {t("common.partial")}</Badge>
+                                <Badge className="bg-[var(--surface-4)] text-[var(--text-30)] border-[var(--border-6)] text-[10px] gap-1"><FileText className="w-3 h-3" />{evaluations.length} {t("common.total")}</Badge>
                             </div>
                         </div>
                     </motion.div>
@@ -249,19 +258,20 @@ export default function MyEvaluationsPage() {
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex flex-col sm:flex-row gap-3 mb-6">
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--text-20)]" />
-                            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search evaluated schemes..." className="pl-10 bg-[var(--bg-card)] border-[var(--border-6)] text-[var(--text-primary)] placeholder:text-[var(--text-20)] h-10 text-sm" />
+                            <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder={t("evaluations.search_placeholder")}
+                                className="pl-10 bg-[var(--bg-card)] border-[var(--border-6)] text-[var(--text-primary)] placeholder:text-[var(--text-20)] h-10 text-sm" />
                         </div>
                         <div className="relative">
                             <Button variant="outline" onClick={() => setSortOpen(!sortOpen)} className="border-[var(--border-8)] bg-[var(--bg-card)] text-[var(--text-50)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] h-10 text-xs gap-2 w-full sm:w-auto">
                                 <ArrowUpDown className="w-3.5 h-3.5" />
-                                {SORT_OPTIONS.find((s) => s.key === sortBy)?.label}
+                                {t(SORT_OPTIONS.find((s) => s.key === sortBy)?.label || "")}
                             </Button>
                             <AnimatePresence>
                                 {sortOpen && (
                                     <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="absolute top-12 right-0 z-20 w-48 bg-[var(--bg-elevated)] border border-[var(--border-8)] rounded-xl overflow-hidden shadow-xl">
                                         {SORT_OPTIONS.map((opt) => (
                                             <button key={opt.key} onClick={() => { setSortBy(opt.key); setSortOpen(false); }} className={cn("w-full flex items-center gap-2 px-4 py-2.5 text-xs transition-colors", sortBy === opt.key ? "bg-[var(--surface-6)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:bg-[var(--surface-3)] hover:text-[var(--text-60)]")}>
-                                                <opt.icon className="w-3.5 h-3.5" />{opt.label}
+                                                <opt.icon className="w-3.5 h-3.5" />{t(opt.label)}
                                                 {sortBy === opt.key && <CheckCircle2 className="w-3 h-3 text-emerald-400 ml-auto" />}
                                             </button>
                                         ))}
@@ -278,23 +288,23 @@ export default function MyEvaluationsPage() {
                                 <Inbox className="w-7 h-7 text-[var(--text-15)]" />
                             </div>
                             <h3 className="text-base font-semibold text-[var(--text-50)] mb-1">
-                                {searchQuery ? "No matching evaluations" : "No schemes evaluated yet"}
+                                {searchQuery ? t("evaluations.no_results") : t("evaluations.no_schemes")}
                             </h3>
                             <p className="text-xs text-[var(--text-20)] mb-5 max-w-xs mx-auto">
-                                {searchQuery ? "Try a different search term" : "Upload a government scheme rulebook PDF to get your first AI-powered eligibility evaluation."}
+                                {searchQuery ? t("evaluations.try_different") : t("evaluations.no_schemes_desc")}
                             </p>
                             <div className="flex items-center gap-3 justify-center">
                                 {searchQuery ? (
                                     <Button onClick={() => setSearchQuery("")} variant="outline" className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-50)] hover:text-[var(--text-primary)] text-xs h-9 gap-2">
-                                        <X className="w-3 h-3" />Clear Search
+                                        <X className="w-3 h-3" />{t("evaluations.clear_search")}
                                     </Button>
                                 ) : (
                                     <>
                                         <Button onClick={() => router.push("/dashboard/upload")} className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 gap-2">
-                                            <Upload className="w-3 h-3" />Upload Scheme PDF
+                                            <Upload className="w-3 h-3" />{t("evaluations.upload_pdf")}
                                         </Button>
                                         <Button onClick={() => router.push("/dashboard/explore")} variant="outline" className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-50)] hover:text-[var(--text-primary)] text-xs h-9 gap-2">
-                                            <Search className="w-3 h-3" />Explore Schemes
+                                            <Search className="w-3 h-3" />{t("dashboard.explore_schemes")}
                                         </Button>
                                     </>
                                 )}
@@ -311,7 +321,7 @@ export default function MyEvaluationsPage() {
                                                 <h3 className="text-sm font-semibold text-[var(--text-primary)] truncate">{evaluation.schemeName}</h3>
                                                 <Badge className={cn("text-[9px] gap-0.5 flex-shrink-0", evaluation.source === "uploaded" ? "bg-blue-500/10 text-blue-400/70 border-blue-500/15" : "bg-[var(--surface-4)] text-[var(--text-30)] border-[var(--border-6)]")}>
                                                     {evaluation.source === "uploaded" ? <Upload className="w-2.5 h-2.5" /> : <Tag className="w-2.5 h-2.5" />}
-                                                    {evaluation.source === "uploaded" ? "Uploaded" : "Preloaded"}
+                                                    {evaluation.source === "uploaded" ? t("common.uploaded") : t("common.preloaded")}
                                                 </Badge>
                                             </div>
                                             {evaluation.benefitSummary && (
@@ -325,13 +335,13 @@ export default function MyEvaluationsPage() {
                                                 <span className="text-[10px] text-[var(--text-20)]">{evaluation.category}</span>
                                                 <span className="text-[10px] text-[var(--text-15)] flex items-center gap-1"><Clock className="w-2.5 h-2.5" />{new Date(evaluation.dateChecked).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
                                                 {evaluation.chatCount > 0 && (
-                                                    <span className="text-[10px] text-blue-400/70 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5" />{evaluation.chatCount} chat{evaluation.chatCount !== 1 ? "s" : ""}</span>
+                                                    <span className="text-[10px] text-blue-400/70 flex items-center gap-1"><Sparkles className="w-2.5 h-2.5" />{evaluation.chatCount} {evaluation.chatCount !== 1 ? t("evaluations.chats") : t("evaluations.chat")}</span>
                                                 )}
                                             </div>
                                         </div>
                                         <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                                             <Button variant="outline" size="sm" className="border-[var(--border-6)] bg-[var(--surface-2)] text-[var(--text-40)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-[11px] h-8 gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
-                                                <Eye className="w-3 h-3" />{evaluation.chatCount > 0 ? "Resume Chat" : "View Details"}
+                                                <Eye className="w-3 h-3" />{evaluation.chatCount > 0 ? t("evaluations.resume_chat") : t("common.view_details")}
                                             </Button>
                                         </div>
                                         <ChevronRight className="w-4 h-4 text-[var(--text-10)] sm:hidden flex-shrink-0" />
@@ -343,7 +353,7 @@ export default function MyEvaluationsPage() {
 
                     {/* Footer */}
                     <div className="text-center py-10 border-t border-[var(--border-4)] mt-12">
-                        <p className="text-xs text-[var(--text-15)]">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                        <p className="text-xs text-[var(--text-15)]">{t("common.footer")}</p>
                     </div>
                 </div>
             </main>

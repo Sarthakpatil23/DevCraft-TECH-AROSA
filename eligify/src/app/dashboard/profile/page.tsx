@@ -53,6 +53,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
+
 // ─── Constants ──────────────────────────────────────────────────────
 const STATES = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
@@ -86,15 +89,15 @@ const RELATIONS = [
 
 // ─── Sidebar Navigation Items (mirroring dashboard) ─────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -246,6 +249,7 @@ export default function ProfilePage() {
     const [saveMessage, setSaveMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
     const [digiLockerConnected, setDigiLockerConnected] = useState(true);
     const hasFetched = useRef(false);
+    const { t } = useLanguage();
 
     // ── Profile State ─────────────────────────────────────────────────
     const [profile, setProfile] = useState<ProfileData>({
@@ -499,11 +503,11 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-2">
                         <Shield className="w-4 h-4 text-emerald-400" />
                         <span className="text-xs font-semibold text-emerald-400">
-                            DigiLocker Connected
+                            {t("sidebar.digilocker")}
                         </span>
                     </div>
                     <p className="text-[10px] text-[var(--text-30)] mt-1">
-                        Documents verified & secure
+                        {t("sidebar.digilocker_desc")}
                     </p>
                 </div>
 
@@ -539,7 +543,7 @@ export default function ProfilePage() {
                                     <Icon className="w-[18px] h-[18px]" />
                                     {item.id === "notifications" && <NotifBadge count={2} />}
                                 </div>
-                                {item.label}
+                                {t(item.label)}
                                 {item.id === "profile" && (
                                     <span className="ml-auto text-[10px] font-bold bg-[var(--surface-6)] px-2 py-0.5 rounded-full text-[var(--text-50)]">
                                         {completion.total}%
@@ -558,7 +562,7 @@ export default function ProfilePage() {
                         className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"
                     >
                         <LogOut className="w-[18px] h-[18px]" />
-                        Logout
+                        {t("sidebar.logout")}
                     </button>
                 </div>
             </aside>
@@ -583,10 +587,10 @@ export default function ProfilePage() {
                                 onClick={() => router.push("/dashboard")}
                                 className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm transition-colors"
                             >
-                                Dashboard
+                                {t("common.dashboard")}
                             </button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Profile</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("profile.title")}</span>
                         </div>
                     </div>
 
@@ -598,8 +602,10 @@ export default function ProfilePage() {
                             className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-60)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-6)] text-xs"
                         >
                             <LayoutDashboard className="w-3.5 h-3.5 mr-1.5" />
-                            Back to Dashboard
+                            {t("common.dashboard")}
                         </Button>
+
+                        <LanguageSwitcher compact />
 
                         <div className="flex items-center gap-3 pl-3 border-l border-[var(--border-6)]">
                             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">
@@ -638,7 +644,7 @@ export default function ProfilePage() {
                                 <div>
                                     <h1 className="text-2xl font-bold text-[var(--text-primary)] flex items-center gap-3">
                                         <User className="w-6 h-6 text-[var(--text-40)]" />
-                                        Your Profile
+                                        {t("profile.title")}
                                     </h1>
                                     <p className="text-sm text-[var(--text-30)] mt-1">
                                         Keep your profile complete for accurate recommendations
@@ -1272,6 +1278,9 @@ export default function ProfilePage() {
 
                     {/* Footer spacer */}
                     <div className="h-2" />
+                    <footer className="text-center text-xs text-[var(--text-30)] py-4">
+                        {t("common.footer")}
+                    </footer>
                 </div>
             </main>
         </div>

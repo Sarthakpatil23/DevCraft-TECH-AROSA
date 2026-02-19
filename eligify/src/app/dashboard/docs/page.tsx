@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -49,15 +51,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -236,12 +238,16 @@ function NotifBadge({ count }: { count: number }) {
 // ═══════════════════════════════════════════════════════════════════
 export default function GetYourDocsPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [selectedDoc, setSelectedDoc] = useState<DocumentGuide | null>(null);
+    const [userName, setUserName] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
     }, [router]);
 
     const handleLogout = () => {
@@ -264,8 +270,8 @@ export default function GetYourDocsPage() {
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -276,14 +282,14 @@ export default function GetYourDocsPage() {
                             <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
         <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -294,12 +300,13 @@ export default function GetYourDocsPage() {
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)]"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Get Your Docs</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("sidebar.docs")}</span>
                         </div>
                     </div>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                    <LanguageSwitcher compact />
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                 </motion.header>
 
                 <div className="px-4 lg:px-8 py-8 max-w-[960px] mx-auto">
@@ -309,9 +316,9 @@ export default function GetYourDocsPage() {
                             <div className="w-10 h-10 rounded-xl bg-[var(--surface-4)] border border-[var(--border-6)] flex items-center justify-center">
                                 <FileCheck className="w-5 h-5 text-[var(--text-40)]" />
                             </div>
-                            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Get Your Documents</h1>
+                            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("sidebar.docs")}</h1>
                         </div>
-                        <p className="text-sm text-[var(--text-30)]">Learn how to obtain required certificates for scheme applications</p>
+                        <p className="text-sm text-[var(--text-30)]">{t("docs.subtitle")}</p>
                     </motion.div>
 
                     {/* Document Detail Panel */}
@@ -320,7 +327,7 @@ export default function GetYourDocsPage() {
                             <motion.div key="detail" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-5">
                                 {/* Back */}
                                 <Button variant="outline" size="sm" onClick={() => setSelectedDoc(null)} className="border-[var(--border-8)] bg-[var(--surface-3)] text-[var(--text-50)] hover:text-[var(--text-primary)] text-xs h-8 gap-1.5">
-                                    <ArrowLeft className="w-3.5 h-3.5" />Back to Documents
+                                    <ArrowLeft className="w-3.5 h-3.5" />{t("docs.back")}
                                 </Button>
 
                                 {/* Doc Header */}
@@ -344,7 +351,7 @@ export default function GetYourDocsPage() {
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
                                     {/* Steps */}
                                     <div className="lg:col-span-2 bg-[var(--bg-card)] border border-[var(--border-6)] rounded-2xl p-5">
-                                        <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-4">Step-by-Step Process</h3>
+                                        <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-4">{t("docs.step_by_step")}</h3>
                                         <div className="space-y-3">
                                             {selectedDoc.steps.map((step, i) => (
                                                 <div key={step.step} className="flex items-start gap-3">
@@ -364,7 +371,7 @@ export default function GetYourDocsPage() {
                                     <div className="space-y-4">
                                         {/* Where to Apply */}
                                         <div className="bg-[var(--bg-card)] border border-[var(--border-6)] rounded-2xl p-5">
-                                            <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-3">Where to Apply</h3>
+                                            <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-3">{t("docs.where_to_apply")}</h3>
                                             <div className="space-y-2">
                                                 {selectedDoc.whereToApply.map((place) => (
                                                     <div key={place} className="flex items-center gap-2 p-2 rounded-lg bg-[var(--surface-2)] border border-[var(--border-3)]">
@@ -377,7 +384,7 @@ export default function GetYourDocsPage() {
 
                                         {/* Required Docs */}
                                         <div className="bg-[var(--bg-card)] border border-[var(--border-6)] rounded-2xl p-5">
-                                            <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-3">Required Documents</h3>
+                                            <h3 className="text-xs font-semibold text-[var(--text-50)] uppercase tracking-wider mb-3">{t("docs.required_documents")}</h3>
                                             <div className="space-y-1.5">
                                                 {selectedDoc.requiredDocs.map((doc) => (
                                                     <div key={doc} className="flex items-center gap-2">
@@ -392,7 +399,7 @@ export default function GetYourDocsPage() {
                                         {selectedDoc.portalUrl && (
                                             <a href={selectedDoc.portalUrl} target="_blank" rel="noopener noreferrer">
                                                 <Button className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold border-0 shadow-lg shadow-emerald-500/20 h-10 text-xs gap-2">
-                                                    <Globe className="w-4 h-4" />Visit Official Portal<ExternalLink className="w-3 h-3" />
+                                                    <Globe className="w-4 h-4" />{t("docs.visit_portal")}<ExternalLink className="w-3 h-3" />
                                                 </Button>
                                             </a>
                                         )}
@@ -420,7 +427,7 @@ export default function GetYourDocsPage() {
                                                 <Separator className="bg-[var(--surface-4)] my-3" />
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-[10px] text-[var(--text-15)] flex items-center gap-1"><Clock className="w-2.5 h-2.5" />{doc.estimatedTime}</span>
-                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">View Process<ChevronRight className="w-3 h-3" /></span>
+                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">{t("docs.view_process")}<ChevronRight className="w-3 h-3" /></span>
                                                 </div>
                                             </motion.div>
                                         );
@@ -432,7 +439,7 @@ export default function GetYourDocsPage() {
 
                     {/* Footer */}
                     <div className="text-center py-10 border-t border-[var(--border-4)] mt-12">
-                        <p className="text-xs text-[var(--text-15)]">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                        <p className="text-xs text-[var(--text-15)]">{t("common.footer")}</p>
                     </div>
                 </div>
             </main>

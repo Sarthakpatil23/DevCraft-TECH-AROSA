@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import {
@@ -42,15 +44,15 @@ import { Separator } from "@/components/ui/separator";
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -198,13 +200,17 @@ function NotifBadge({ count }: { count: number }) {
 // ═══════════════════════════════════════════════════════════════════
 export default function ResourcesPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [activeCategory, setActiveCategory] = useState("all");
     const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
+    const [userName, setUserName] = useState("");
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
-        if (!token) router.push("/");
+        if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
     }, [router]);
 
     const handleLogout = () => {
@@ -235,8 +241,8 @@ export default function ResourcesPage() {
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -247,14 +253,14 @@ export default function ResourcesPage() {
                             <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
         <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -265,12 +271,13 @@ export default function ResourcesPage() {
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)]"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Resources</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("sidebar.resources")}</span>
                         </div>
                     </div>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                    <LanguageSwitcher compact />
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                 </motion.header>
 
                 <div className="px-4 lg:px-8 py-8 max-w-[960px] mx-auto">
@@ -280,16 +287,16 @@ export default function ResourcesPage() {
                             <div className="w-10 h-10 rounded-xl bg-[var(--surface-4)] border border-[var(--border-6)] flex items-center justify-center">
                                 <BookOpen className="w-5 h-5 text-[var(--text-40)]" />
                             </div>
-                            <h1 className="text-2xl font-bold text-[var(--text-primary)]">Resources</h1>
+                            <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("sidebar.resources")}</h1>
                         </div>
-                        <p className="text-sm text-[var(--text-30)]">Learn how to apply for schemes correctly</p>
+                        <p className="text-sm text-[var(--text-30)]">{t("resources.subtitle")}</p>
                     </motion.div>
 
                     {/* Category Tabs */}
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-2 mb-8 overflow-x-auto pb-1 scrollbar-none">
                         {CATEGORIES.map((cat) => (
-                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={cn("px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border", activeCategory === cat.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-30)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-50)]")}>
-                                {cat.label}
+                            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={cn("px-4 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap border", activeCategory === cat.key ? "bg-[var(--surface-8)] text-[var(--text-primary)] border-[var(--border-10)]" : "bg-transparent text-[var(--text-30)] border-[var(--border-4)] hover:bg-[var(--surface-3)] hover:text-[var(--text-50)]")}> 
+                                {t(`resources.categories.${cat.key}`)}
                             </button>
                         ))}
                     </motion.div>
@@ -298,7 +305,7 @@ export default function ResourcesPage() {
                     {videos.length > 0 && (
                         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="mb-10">
                             <h2 className="text-xs font-semibold text-[var(--text-40)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <Video className="w-3.5 h-3.5" />Video Guides
+                                <Video className="w-3.5 h-3.5" />{t("resources.video_guides")}
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {videos.map((resource, i) => {
@@ -326,7 +333,7 @@ export default function ResourcesPage() {
                                                 <p className="text-[11px] text-[var(--text-25)] leading-relaxed line-clamp-2">{resource.description}</p>
                                                 <div className="flex items-center justify-between mt-3">
                                                     <Badge className="bg-[var(--surface-4)] text-[var(--text-20)] border-[var(--border-5)] text-[9px]">{CATEGORIES.find((c) => c.key === resource.category)?.label}</Badge>
-                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">Watch<Play className="w-3 h-3" /></span>
+                                                    <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">{t("resources.watch")}<Play className="w-3 h-3" /></span>
                                                 </div>
                                             </div>
                                         </motion.div>
@@ -340,7 +347,7 @@ export default function ResourcesPage() {
                     {guides.length > 0 && (
                         <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-10">
                             <h2 className="text-xs font-semibold text-[var(--text-40)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <FileText className="w-3.5 h-3.5" />Guides & Articles
+                                <FileText className="w-3.5 h-3.5" />{t("resources.guides_articles")}
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {guides.map((resource, i) => {
@@ -356,7 +363,7 @@ export default function ResourcesPage() {
                                                     <p className="text-[11px] text-[var(--text-25)] leading-relaxed line-clamp-2">{resource.description}</p>
                                                     <div className="flex items-center justify-between mt-3">
                                                         <Badge className="bg-[var(--surface-4)] text-[var(--text-20)] border-[var(--border-5)] text-[9px]">{CATEGORIES.find((c) => c.key === resource.category)?.label}</Badge>
-                                                        <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">Read<ChevronRight className="w-3 h-3" /></span>
+                                                        <span className="text-[10px] text-emerald-400/60 font-medium flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">{t("resources.read")}<ChevronRight className="w-3 h-3" /></span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -371,7 +378,7 @@ export default function ResourcesPage() {
                     <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}>
                         <Separator className="bg-[var(--surface-4)] mb-8" />
                         <h2 className="text-xs font-semibold text-[var(--text-40)] uppercase tracking-wider mb-5 flex items-center gap-2">
-                            <HelpCircle className="w-3.5 h-3.5" />Frequently Asked Questions
+                            <HelpCircle className="w-3.5 h-3.5" />{t("resources.faq")}
                         </h2>
                         <div className="space-y-2">
                             {FAQS.map((faq) => (
@@ -401,7 +408,7 @@ export default function ResourcesPage() {
 
                     {/* Footer */}
                     <div className="text-center py-10 border-t border-[var(--border-4)] mt-12">
-                        <p className="text-xs text-[var(--text-15)]">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                        <p className="text-xs text-[var(--text-15)]">{t("common.footer")}</p>
                     </div>
                 </div>
             </main>

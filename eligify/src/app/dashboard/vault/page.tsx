@@ -1,5 +1,7 @@
 "use client";
 import React, { useEffect, useState, useCallback, useRef } from "react";
+import { useLanguage } from "@/context/language-context";
+import { LanguageSwitcher } from "@/components/language-switcher";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -119,15 +121,15 @@ import {
 
 // ─── Sidebar Items ──────────────────────────────────────────────────
 const sidebarItems = [
-    { icon: LayoutDashboard, label: "Dashboard", id: "dashboard", href: "/dashboard" },
-    { icon: User, label: "Profile", id: "profile", href: "/dashboard/profile" },
-    { icon: Search, label: "Explore Schemes", id: "explore", href: "/dashboard/explore" },
-    { icon: Upload, label: "Upload Scheme", id: "upload", href: "/dashboard/upload" },
-    { icon: ClipboardList, label: "My Evaluations", id: "evaluations", href: "/dashboard/evaluations" },
-    { icon: FileCheck, label: "Get Your Docs", id: "docs", href: "/dashboard/docs" },
-    { icon: FolderLock, label: "Document Vault", id: "vault", href: "/dashboard/vault" },
-    { icon: BookOpen, label: "Resources", id: "resources", href: "/dashboard/resources" },
-    { icon: Bell, label: "Notifications", id: "notifications", href: "/dashboard/notifications" },
+    { icon: LayoutDashboard, label: "sidebar.dashboard", id: "dashboard", href: "/dashboard" },
+    { icon: User, label: "sidebar.profile", id: "profile", href: "/dashboard/profile" },
+    { icon: Search, label: "sidebar.explore", id: "explore", href: "/dashboard/explore" },
+    { icon: Upload, label: "sidebar.upload", id: "upload", href: "/dashboard/upload" },
+    { icon: ClipboardList, label: "sidebar.evaluations", id: "evaluations", href: "/dashboard/evaluations" },
+    { icon: FileCheck, label: "sidebar.docs", id: "docs", href: "/dashboard/docs" },
+    { icon: FolderLock, label: "sidebar.vault", id: "vault", href: "/dashboard/vault" },
+    { icon: BookOpen, label: "sidebar.resources", id: "resources", href: "/dashboard/resources" },
+    { icon: Bell, label: "sidebar.notifications", id: "notifications", href: "/dashboard/notifications" },
 ];
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -213,6 +215,7 @@ const API_BASE = "http://127.0.0.1:8000/api/auth";
 // ═══════════════════════════════════════════════════════════════════
 export default function DocumentVaultPage() {
     const router = useRouter();
+    const { t } = useLanguage();
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -243,6 +246,7 @@ export default function DocumentVaultPage() {
 
     // Drag state
     const [isDragging, setIsDragging] = useState(false);
+    const [userName, setUserName] = useState("");
 
     const getToken = () => localStorage.getItem("access_token");
 
@@ -265,6 +269,8 @@ export default function DocumentVaultPage() {
     useEffect(() => {
         const token = getToken();
         if (!token) { router.push("/"); return; }
+        fetch("http://127.0.0.1:8000/api/auth/profile/", { headers: { Authorization: `Bearer ${token}` } })
+            .then(r => r.json()).then(d => { const u = d.user; setUserName(u?.first_name ? `${u.first_name}${u.last_name ? ' ' + u.last_name : ''}` : u?.email || ""); }).catch(() => {});
         fetchDocuments();
     }, [router, fetchDocuments]);
 
@@ -420,8 +426,8 @@ export default function DocumentVaultPage() {
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden ml-auto text-[var(--text-40)] hover:text-[var(--text-primary)]"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="mx-4 mb-4 p-3 rounded-xl bg-emerald-500/[0.06] border border-emerald-500/[0.12]">
-                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">DigiLocker Connected</span></div>
-                    <p className="text-[10px] text-[var(--text-30)] mt-1">Documents verified & secure</p>
+                    <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-xs font-semibold text-emerald-400">{t("sidebar.digilocker")}</span></div>
+                    <p className="text-[10px] text-[var(--text-30)] mt-1">{t("sidebar.digilocker_desc")}</p>
                 </div>
                 <div className="mx-4 border-t border-[var(--border-4)] mb-2" />
                 <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto">
@@ -432,14 +438,14 @@ export default function DocumentVaultPage() {
                             <button key={item.id} onClick={() => { router.push(item.href); setSidebarOpen(false); }} className={cn("w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all relative", isActive ? "bg-[var(--surface-8)] text-[var(--text-primary)]" : "text-[var(--text-40)] hover:text-[var(--text-70)] hover:bg-[var(--surface-3)]")}>
                                 {isActive && <motion.div layoutId="sidebarActive" className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-emerald-400 rounded-r-full" />}
                                 <div className="relative"><Icon className="w-[18px] h-[18px]" />{item.id === "notifications" && <NotifBadge count={2} />}</div>
-                                {item.label}
+                                {t(item.label)}
                             </button>
                         );
                     })}
                 </nav>
                 <div className="px-3 py-2"><ThemeToggle /></div>
                 <div className="p-4 border-t border-[var(--border-4)]">
-                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />Logout</button>
+                    <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-400/70 hover:text-red-400 hover:bg-red-400/[0.06] transition-all"><LogOut className="w-[18px] h-[18px]" />{t("sidebar.logout")}</button>
                 </div>
             </aside>
 
@@ -450,19 +456,20 @@ export default function DocumentVaultPage() {
                     <div className="flex items-center gap-4">
                         <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-[var(--text-50)] hover:text-[var(--text-primary)]"><Menu className="w-6 h-6" /></button>
                         <div className="flex items-center gap-2">
-                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">Dashboard</button>
+                            <button onClick={() => router.push("/dashboard")} className="text-[var(--text-30)] hover:text-[var(--text-60)] text-sm">{t("common.dashboard")}</button>
                             <ChevronRight className="w-3.5 h-3.5 text-[var(--text-15)]" />
-                            <span className="text-sm text-[var(--text-primary)] font-medium">Document Vault</span>
+                            <span className="text-sm text-[var(--text-primary)] font-medium">{t("sidebar.vault")}</span>
                         </div>
                     </div>
+                    <LanguageSwitcher compact />
                     <div className="flex items-center gap-3">
                         <Button
                             onClick={() => { setUploadOpen(true); resetUploadForm(); }}
                             className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold border-0 shadow-lg shadow-emerald-500/20 h-9 text-xs gap-1.5"
                         >
-                            <Plus className="w-4 h-4" />Upload Document
+                            <Plus className="w-4 h-4" />{t("vault.upload")}
                         </Button>
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">R</div>
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500/40 to-blue-500/40 flex items-center justify-center text-sm font-bold text-[var(--text-80)] border border-[var(--border-10)]">{userName ? userName.charAt(0).toUpperCase() : "?"}</div>
                     </div>
                 </motion.header>
 
@@ -474,8 +481,8 @@ export default function DocumentVaultPage() {
                                 <FolderLock className="w-5 h-5 text-[var(--text-40)]" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-[var(--text-primary)]">Document Vault</h1>
-                                <p className="text-sm text-[var(--text-30)]">Securely store and manage your important documents</p>
+                                <h1 className="text-2xl font-bold text-[var(--text-primary)]">{t("sidebar.vault")}</h1>
+                                <p className="text-sm text-[var(--text-30)]">{t("vault.subtitle")}</p>
                             </div>
                         </div>
                     </motion.div>
@@ -488,10 +495,10 @@ export default function DocumentVaultPage() {
                         className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6"
                     >
                         {[
-                            { label: "Total Documents", value: documents.length.toString(), icon: FileText, color: "text-blue-400", bg: "bg-blue-400/10" },
-                            { label: "Categories Used", value: new Set(documents.map((d) => d.category)).size.toString(), icon: FolderOpen, color: "text-violet-400", bg: "bg-violet-400/10" },
-                            { label: "Storage Used", value: formatFileSize(totalSize), icon: HardDrive, color: "text-emerald-400", bg: "bg-emerald-400/10" },
-                            { label: "Recent Upload", value: documents.length > 0 ? formatDate(documents[0].uploaded_at) : "None", icon: CloudUpload, color: "text-amber-400", bg: "bg-amber-400/10" },
+                            { label: t("vault.stats.total_docs"), value: documents.length.toString(), icon: FileText, color: "text-blue-400", bg: "bg-blue-400/10" },
+                            { label: t("vault.stats.categories_used"), value: new Set(documents.map((d) => d.category)).size.toString(), icon: FolderOpen, color: "text-violet-400", bg: "bg-violet-400/10" },
+                            { label: t("vault.stats.storage_used"), value: formatFileSize(totalSize), icon: HardDrive, color: "text-emerald-400", bg: "bg-emerald-400/10" },
+                            { label: t("vault.stats.recent_upload"), value: documents.length > 0 ? formatDate(documents[0].uploaded_at) : t("vault.stats.none"), icon: CloudUpload, color: "text-amber-400", bg: "bg-amber-400/10" },
                         ].map((stat, i) => (
                             <div
                                 key={stat.label}
@@ -516,7 +523,7 @@ export default function DocumentVaultPage() {
                         className="flex items-center gap-3 mb-6 flex-wrap"
                     >
                         <div className="flex items-center gap-2 text-xs text-[var(--text-30)]">
-                            <Filter className="w-3.5 h-3.5" />Filter:
+                            <Filter className="w-3.5 h-3.5" />{t("vault.filter")}
                         </div>
                         <div className="flex gap-2 flex-wrap">
                             <button
@@ -528,7 +535,7 @@ export default function DocumentVaultPage() {
                                         : "bg-[var(--surface-2)] border-[var(--border-4)] text-[var(--text-30)] hover:border-[var(--border-8)]"
                                 )}
                             >
-                                All ({documents.length})
+                                {t("vault.all")} ({documents.length})
                             </button>
                             {CATEGORIES.map((cat) => {
                                 const count = documents.filter((d) => d.category === cat.value).length;
@@ -544,7 +551,7 @@ export default function DocumentVaultPage() {
                                                 : "bg-[var(--surface-2)] border-[var(--border-4)] text-[var(--text-30)] hover:border-[var(--border-8)]"
                                         )}
                                     >
-                                        {cat.label} ({count})
+                                        {t(`vault.categories.${cat.value}`)} ({count})
                                     </button>
                                 );
                             })}
@@ -571,8 +578,8 @@ export default function DocumentVaultPage() {
                                     className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[var(--bg-page)]/90 rounded-2xl border-2 border-dashed border-emerald-400/40"
                                 >
                                     <CloudUpload className="w-10 h-10 text-emerald-400 mb-3" />
-                                    <p className="text-sm font-semibold text-emerald-400">Drop your file here</p>
-                                    <p className="text-xs text-[var(--text-30)] mt-1">PDF, Images, Documents supported</p>
+                                    <p className="text-sm font-semibold text-emerald-400">{t("vault.drop_here")}</p>
+                                    <p className="text-xs text-[var(--text-30)] mt-1">{t("vault.supported_types")}</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -596,18 +603,18 @@ export default function DocumentVaultPage() {
                                     <FolderOpen className="w-7 h-7 text-[var(--text-20)]" />
                                 </div>
                                 <h3 className="text-lg font-semibold text-[var(--text-60)] mb-2">
-                                    {filterCategory !== "all" ? "No documents in this category" : "Your vault is empty"}
+                                    {filterCategory !== "all" ? t("vault.empty_category") : t("vault.empty")}
                                 </h3>
                                 <p className="text-sm text-[var(--text-25)] mb-6 max-w-sm mx-auto">
                                     {filterCategory !== "all"
-                                        ? "Upload documents or change the filter to see your files."
-                                        : "Upload your important documents like Aadhaar, marksheets, income certificates and more. They\u2019ll be securely stored and ready when you need them."}
+                                        ? t("vault.empty_category_desc")
+                                        : t("vault.empty_desc")}
                                 </p>
                                 <Button
                                     onClick={() => { setUploadOpen(true); resetUploadForm(); }}
                                     className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold border-0 shadow-lg shadow-emerald-500/20 gap-2"
                                 >
-                                    <CloudUpload className="w-4 h-4" />Upload Your First Document
+                                    <CloudUpload className="w-4 h-4" />{t("vault.upload_first")}
                                 </Button>
                             </motion.div>
                         ) : (
@@ -689,8 +696,8 @@ export default function DocumentVaultPage() {
                                     <div className="w-10 h-10 rounded-xl bg-[var(--surface-3)] border border-[var(--border-5)] flex items-center justify-center mb-3 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors">
                                         <Plus className="w-5 h-5 text-[var(--text-20)] group-hover:text-emerald-400 transition-colors" />
                                     </div>
-                                    <span className="text-xs font-medium text-[var(--text-30)] group-hover:text-emerald-400 transition-colors">Upload Document</span>
-                                    <span className="text-[10px] text-[var(--text-15)] mt-1">or drag & drop</span>
+                                    <span className="text-xs font-medium text-[var(--text-30)] group-hover:text-emerald-400 transition-colors">{t("vault.upload")}</span>
+                                    <span className="text-[10px] text-[var(--text-15)] mt-1">{t("vault.or_drag")}</span>
                                 </motion.div>
                             </div>
                         )}
@@ -698,7 +705,7 @@ export default function DocumentVaultPage() {
 
                     {/* Footer */}
                     <div className="text-center py-10 border-t border-[var(--border-4)] mt-12">
-                        <p className="text-xs text-[var(--text-15)]">© 2026 Eligify · AI-Powered Policy Decision Engine</p>
+                        <p className="text-xs text-[var(--text-15)]">{t("common.footer")}</p>
                     </div>
                 </div>
             </main>
