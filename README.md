@@ -32,8 +32,8 @@ By bridging the gap between bureaucratic logic and citizen needs, Eligify ensure
 
 ## 🛠️ Tech Stack
 
--   **Frontend**: Next.js 15 (React), TypeScript, Tailwind CSS, Framer Motion, Lucide Icons.
--   **Backend**: Django (Python), Django REST Framework, django-allauth (Google OAuth).
+-   **Frontend**: Next.js 16 (React 19), TypeScript, Tailwind CSS v4, Framer Motion, Lucide Icons, @react-oauth/google.
+-   **Backend**: Django 5 (Python), DRF, django-allauth, google-genai (Gemini AI), pdfplumber (PDF Analysis).
 -   **Authentication**: JWT tokens with djangorestframework-simplejwt.
 -   **Architecture**: Static export of Next.js frontend served via Django static file handling.
 
@@ -43,7 +43,7 @@ Follow these instructions to set up and run the project locally.
 
 ### Prerequisites
 
--   **Node.js**: v18.17.0 or higher (Required for Next.js 14+) - [Download](https://nodejs.org/)
+-   **Node.js**: v18.17.0 or higher (Recommended v20+) - [Download](https://nodejs.org/)
 -   **Python**: v3.10 or higher (Recommended v3.11+) - [Download](https://www.python.org/downloads/)
 -   **Git**: For version control - [Download](https://git-scm.com/downloads)
 -   **npm** (Node Package Manager): Usually comes with Node.js.
@@ -93,6 +93,14 @@ Follow these instructions to set up and run the project locally.
     
     # Apply database migrations
     python manage.py migrate
+    
+    # Apply database migrations
+    python manage.py migrate
+
+    # Configure Environment Variables
+    # Create a .env file in the backend root directory (c:\ELIGIFY\backend\.env)
+    # Add your Google Gemini API Key:
+    # GEMINI_API_KEY=your_api_key_here
     
     # Configure Google OAuth (Required for authentication)
     # Run the following command to set up OAuth credentials:
