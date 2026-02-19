@@ -1,5 +1,17 @@
 # Eligify - AI Policy Decision Engine
 
+## ❓ Problem Statement
+
+**Docu-Agent: The Intelligent Eligibility Parser**
+
+### The Context
+Government schemes, scholarship rulebooks, and guidelines are often dense, bureaucratic, and difficult to decipher. Students frequently miss life-changing opportunities simply because they cannot navigate complex eligibility criteria hidden within 50-page legal PDFs.
+
+### The Challenge
+Develop an Agentic AI system that acts as a smart personal assistant. The system must move beyond simple text summarization to perform "Actionable Intelligence." It should ingest complex PDF documents, cross-reference them with a user's specific profile (Income, Caste, Education), and generate a deterministic "Eligible/Not Eligible" result with a step-by-step execution plan.
+
+## 💡 The Solution: Eligify
+
 Eligify is an intelligent platform designed to democratize access to public benefits. It leverages AI to decode complex government policy documents and helps citizens instantly check their eligibility for various schemes, scholarships, and social welfare programs.
 
 By bridging the gap between bureaucratic logic and citizen needs, Eligify ensures transparency, precision, and ease of access for everyone.
